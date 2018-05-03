@@ -3,18 +3,6 @@ package ui
 import "github.com/jroimartin/gocui"
 
 func keybindings(g *gocui.Gui) error {
-	if err := g.SetKeybinding(channelPlaylistsView, 'h', gocui.ModNone, goToChannels); err != nil {
-		return err
-	}
-
-	if err := g.SetKeybinding(videosView, 'h', gocui.ModNone, delVideosView); err != nil {
-		return err
-	}
-
-	if err := g.SetKeybinding(videoView, 'h', gocui.ModNone, delVideoView); err != nil {
-		return err
-	}
-
 	if err := g.SetKeybinding(videoView, 'p', gocui.ModNone, playVideo); err != nil {
 		return err
 	}
@@ -41,6 +29,10 @@ func keybindings(g *gocui.Gui) error {
 		return err
 	}
 
+	if err := g.SetKeybinding("", 'h', gocui.ModNone, goBack); err != nil {
+		return err
+	}
+
 	if err := g.SetKeybinding(qualityView, gocui.KeyEnter, gocui.ModNone, pickQuality); err != nil {
 		return err
 	}
@@ -54,10 +46,6 @@ func keybindings(g *gocui.Gui) error {
 	}
 
 	if err := g.SetKeybinding(rateVideoView, gocui.KeyEnter, gocui.ModNone, rate); err != nil {
-		return err
-	}
-
-	if err := g.SetKeybinding(rateVideoView, 'h', gocui.ModNone, deleteRateVideo); err != nil {
 		return err
 	}
 

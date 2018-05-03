@@ -40,26 +40,6 @@ func runcmd(cmd string, shell bool) []byte {
 	return out
 }
 
-func setCurrentViewOnTop(g *gocui.Gui, name string) (*gocui.View, error) {
-	if _, err := g.SetCurrentView(name); err != nil {
-		return nil, err
-	}
-	return g.SetViewOnTop(name)
-}
-
-func goToChannels(g *gocui.Gui, v *gocui.View) error {
-	if err := g.DeleteView(channelPlaylistsView); err != nil {
-		return err
-	}
-
-	playlists = []*youtube.Playlist{}
-
-	if _, err := g.SetCurrentView(channelsView); err != nil {
-		return err
-	}
-	return nil
-}
-
 func cursorUp(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
 		ox, oy := v.Origin()
@@ -83,36 +63,6 @@ func cursorDown(g *gocui.Gui, v *gocui.View) error {
 			}
 		}
 	}
-	return nil
-}
-
-func delVideoView(g *gocui.Gui, v *gocui.View) error {
-	if err := g.DeleteView(videoView); err != nil {
-		return err
-	}
-
-	if _, err := g.SetCurrentView(videosView); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func delVideosView(g *gocui.Gui, v *gocui.View) error {
-	if err := g.DeleteView(videosView); err != nil {
-		return err
-	}
-
-	if len(playlists) > 0 {
-		if _, err := g.SetCurrentView(channelPlaylistsView); err != nil {
-			return err
-		}
-	} else {
-		if _, err := g.SetCurrentView(channelsView); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -432,7 +382,7 @@ func rate(g *gocui.Gui, v *gocui.View) error {
 
 	e := api.RateVideo(selectedVideo.ContentDetails.VideoId, l)
 	if e == nil {
-		deleteRateVideo(g, v)
+		goBack(g, v)
 	}
 
 	return nil
@@ -449,18 +399,6 @@ func pickQuality(g *gocui.Gui, v *gocui.View) error {
 
 	selectedVideoQuality = l
 	if err := g.DeleteView(qualityView); err != nil {
-		return err
-	}
-
-	if _, err := g.SetCurrentView(videoView); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func deleteRateVideo(g *gocui.Gui, v *gocui.View) error {
-	if err := g.DeleteView(rateVideoView); err != nil {
 		return err
 	}
 
