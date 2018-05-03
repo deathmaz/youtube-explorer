@@ -15,12 +15,12 @@ func Layout(g *gocui.Gui) error {
 			return err
 		}
 		v.Highlight = true
-		v.SelBgColor = gocui.ColorGreen
+		v.SelBgColor = gocui.ColorYellow
 		v.SelFgColor = gocui.ColorBlack
 		v.Title = channelsView
 		v.Wrap = true
 
-		if _, err = setCurrentViewOnTop(g, channelsView); err != nil {
+		if _, err := g.SetCurrentView(channelsView); err != nil {
 			return err
 		}
 
@@ -38,7 +38,7 @@ func Layout(g *gocui.Gui) error {
 					v.Clear()
 
 					for _, channel := range subscriptions {
-						fmt.Fprintln(v, channel.Snippet.Title)
+						fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", channel.Snippet.Title)
 					}
 					RemoveLoadin(g, v.Title)
 					return nil
@@ -51,22 +51,5 @@ func Layout(g *gocui.Gui) error {
 		}
 
 	}
-
-	/* if v, err := g.SetView("v3", 0, maxY/2-1, maxX/2-1, maxY-1); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = "v3"
-		v.Wrap = true
-		v.Autoscroll = true
-		fmt.Fprint(v, "Press TAB to change current view")
-	}
-	if v, err := g.SetView("v4", maxX/2, maxY/2, maxX-1, maxY-1); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = "v4 (editable)"
-		v.Editable = true
-	} */
 	return nil
 }

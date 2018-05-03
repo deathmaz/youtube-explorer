@@ -132,7 +132,7 @@ func goToPlaylist(g *gocui.Gui, v *gocui.View) error {
 		}
 
 		v.Highlight = true
-		v.SelBgColor = gocui.ColorGreen
+		v.SelBgColor = gocui.ColorYellow
 		v.SelFgColor = gocui.ColorBlack
 		v.Title = "Channels playlists view"
 		v.Wrap = true
@@ -152,7 +152,7 @@ func goToPlaylist(g *gocui.Gui, v *gocui.View) error {
 						v.Clear()
 
 						for _, playlist := range playlists {
-							fmt.Fprintln(v, playlist.Snippet.Title)
+							fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", playlist.Snippet.Title)
 						}
 						RemoveLoadin(g, channelPlaylistsView)
 						return nil
@@ -186,7 +186,7 @@ func goToVideos(g *gocui.Gui, v *gocui.View) error {
 		}
 
 		v.Highlight = true
-		v.SelBgColor = gocui.ColorGreen
+		v.SelBgColor = gocui.ColorYellow
 		v.SelFgColor = gocui.ColorBlack
 		v.Title = "Videos"
 		v.Wrap = true
@@ -206,7 +206,7 @@ func goToVideos(g *gocui.Gui, v *gocui.View) error {
 						v.Clear()
 
 						for _, video := range videos {
-							fmt.Fprintln(v, video.Snippet.Title)
+							fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", video.Snippet.Title)
 						}
 						RemoveLoadin(g, videosView)
 						return nil
@@ -241,7 +241,7 @@ func goToChannelVideos(g *gocui.Gui, v *gocui.View) error {
 		}
 
 		v.Highlight = true
-		v.SelBgColor = gocui.ColorGreen
+		v.SelBgColor = gocui.ColorYellow
 		v.SelFgColor = gocui.ColorBlack
 		v.Title = "Videos"
 		v.Wrap = true
@@ -262,7 +262,7 @@ func goToChannelVideos(g *gocui.Gui, v *gocui.View) error {
 						v.Clear()
 
 						for _, video := range videos {
-							fmt.Fprintln(v, video.Snippet.Title)
+							fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", video.Snippet.Title)
 						}
 						RemoveLoadin(g, videosView)
 						return nil
@@ -295,7 +295,6 @@ func goToVideo(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 
-		v.Highlight = true
 		v.Wrap = true
 
 		fmt.Fprintln(v, l)
@@ -304,9 +303,9 @@ func goToVideo(g *gocui.Gui, v *gocui.View) error {
 				selectedVideo = video
 
 				v.Title = video.Snippet.Title
-				fmt.Fprintln(v, video.ContentDetails.VideoId)
-				fmt.Fprintln(v, video.ContentDetails.VideoPublishedAt)
-				fmt.Fprintln(v, video.Snippet.Description)
+				fmt.Fprintf(v, "\x1b[38;5;6m%s\x1b[0m\n", video.ContentDetails.VideoId)
+				fmt.Fprintf(v, "\x1b[38;5;11m%s\x1b[0m\n", video.ContentDetails.VideoPublishedAt)
+				fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", video.Snippet.Description)
 
 				go func() {
 					rating, _ := api.GetRating(video.ContentDetails.VideoId)
@@ -319,14 +318,14 @@ func goToVideo(g *gocui.Gui, v *gocui.View) error {
 						}
 
 						fmt.Fprintln(v, "")
-						fmt.Fprintln(v, "Your rating:", rating)
-						fmt.Fprintln(v, "")
-						fmt.Fprintln(v, "")
+						fmt.Fprintf(v, "\x1b[38;5;208mYout rating: %s\x1b[0m\n\n\n", rating)
+						fmt.Fprint(v, "\x1b[33;1mComments:\x1b[0m\n\n")
 
 						for _, comment := range comments.Items {
-							fmt.Fprintln(v, comment.Snippet.AuthorDisplayName, comment.Snippet.LikeCount, "Likes")
-							fmt.Fprintln(v, comment.Snippet.PublishedAt)
-							fmt.Fprintln(v, comment.Snippet.TextDisplay)
+							fmt.Fprintf(v, "\x1b[38;5;6m%s\x1b[0m ", comment.Snippet.AuthorDisplayName)
+							fmt.Fprintf(v, "\x1b[38;5;6m%v %s\x1b[0m \n", comment.Snippet.LikeCount, "Likes")
+							fmt.Fprintf(v, "\x1b[38;5;11m%s\x1b[0m\n", comment.Snippet.PublishedAt)
+							fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", comment.Snippet.TextDisplay)
 							fmt.Fprintln(v, "")
 						}
 
@@ -488,7 +487,7 @@ func quit(g *gocui.Gui, v *gocui.View) error {
 
 // Run func
 func Run() {
-	g, err := gocui.NewGui(gocui.OutputNormal)
+	g, err := gocui.NewGui(gocui.Output256)
 	if err != nil {
 		log.Panicln(err)
 	}
