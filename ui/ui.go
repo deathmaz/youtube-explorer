@@ -335,6 +335,8 @@ func selectQuality(g *gocui.Gui, v *gocui.View) error {
 		}
 
 		v.Highlight = true
+		v.SelBgColor = gocui.ColorYellow
+		v.SelFgColor = gocui.ColorBlack
 		v.Title = "Select Video quality"
 
 		for _, quality := range videoQuality {
@@ -357,6 +359,8 @@ func rateVideo(g *gocui.Gui, v *gocui.View) error {
 		}
 
 		v.Highlight = true
+		v.SelBgColor = gocui.ColorYellow
+		v.SelFgColor = gocui.ColorBlack
 		v.Title = "Rate Video"
 
 		for _, rating := range ratings {

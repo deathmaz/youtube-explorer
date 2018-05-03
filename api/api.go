@@ -195,20 +195,6 @@ func GetComments(videoID string) (*youtube.CommentListResponse, error) {
 	return response, err
 }
 
-// TestChannelVideos test
-func TestChannelVideos() {
-	call := Service.Channels.List("contentDetails,snippet")
-	call = call.Id("UC3ptU7hyNeFlJdvQj2nZHJg")
-	res, err := call.Do()
-
-	handleError(err, "")
-	fmt.Println(res.Items[0].ContentDetails.RelatedPlaylists.Uploads)
-	items, _ := GetPlaylistItems(res.Items[0].ContentDetails.RelatedPlaylists.Uploads)
-	for _, i := range items.Items {
-		fmt.Println(i.Snippet.Title)
-	}
-}
-
 // Run function
 func init() {
 	ctx := context.Background()
