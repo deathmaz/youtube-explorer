@@ -42,61 +42,49 @@ func runcmd(cmd string, shell bool) []byte {
 }
 
 func cursorDown(g *gocui.Gui, v *gocui.View) error {
-	var l string
-	var err error
-
 	if v != nil {
 		cx, cy := v.Cursor()
-		if l, err = v.Line(cy + 1); err != nil {
-			l = ""
+		ox, oy := v.Origin()
+		maxX, _ := g.Size()
+		lines := 0
+		for _, line := range v.BufferLines()[1 : len(v.BufferLines())-1] {
+			if len(line) > maxX-2 {
+				lines += int(Round(float64(len(line)/maxX), .1, 0))
+			} else {
+				lines++
+			}
 		}
 
-		down := func() error {
+		if oy+cy < lines {
 			if err := v.SetCursor(cx, cy+1); err != nil {
-				ox, oy := v.Origin()
 				if err := v.SetOrigin(ox, oy+1); err != nil {
 					return err
 				}
 			}
 			return nil
 		}
-
-		if l != "" && v.Name() != videoView {
-			down()
-		} else if v.Name() == videoView {
-			down()
-		}
 	}
 	return nil
 }
 
 func halfPageDown(g *gocui.Gui, v *gocui.View) error {
-	var l string
-	var err error
-
 	if v != nil {
 		cx, cy := v.Cursor()
-		_, maxY := g.Size()
+		maxX, maxY := g.Size()
 		ox, oy := v.Origin()
 
-		if l, err = v.Line(cy + maxY/2); err != nil {
-			l = ""
+		curY := cy + maxY/2
+		lines := 0
+		for _, line := range v.BufferLines()[1 : len(v.BufferLines())-1] {
+			if len(line) > maxX-2 {
+				lines += int(Round(float64(len(line)/maxX), .1, 0))
+			} else {
+				lines++
+			}
 		}
 
-		curY := cy + maxY/2
-
-		if l == "" && v.Name() != videoView {
-			var line string
-			for i := 0; i < maxY; i++ {
-				if line, err = v.Line(i); err != nil {
-					line = ""
-				}
-
-				if line == "" {
-					curY = i - 1
-					break
-				}
-			}
+		if oy+curY > lines {
+			curY = lines - oy
 		}
 
 		if err := v.SetCursor(cx, curY); err != nil {
@@ -121,18 +109,21 @@ func cursorUp(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-// FIXME: sometimes crashes in video view
 func halfPageUp(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
 		cx, cy := v.Cursor()
 		ox, oy := v.Origin()
 		_, maxY := g.Size()
 		cursorMaxY := cy - maxY/2
+		originMaxY := oy - maxY/2
 		if oy <= 0 {
 			cursorMaxY = 0
 		}
+
+		if originMaxY < 0 {
+			originMaxY = 0
+		}
 		if err := v.SetCursor(cx, cursorMaxY); err != nil {
-			originMaxY := oy - maxY/2
 			if err := v.SetOrigin(ox, originMaxY); err != nil {
 				return err
 			}
@@ -345,22 +336,22 @@ func goToVideo(g *gocui.Gui, v *gocui.View) error {
 						}
 
 						if len(video.Items) > 0 {
-							fmt.Fprintln(v, "")
+							fmt.Fprintln(v, "~")
 							fmt.Fprintf(v, "\x1b[38;5;6mDuration: %v\x1b[0m\n", video.Items[0].ContentDetails.Duration)
 							fmt.Fprintf(v, "\x1b[38;5;6mTotal views: %v\x1b[0m\n", video.Items[0].Statistics.ViewCount)
 							fmt.Fprintf(v, "\x1b[38;5;6mLikes: %v\x1b[0m\n", video.Items[0].Statistics.LikeCount)
-							fmt.Fprintf(v, "\x1b[38;5;6mDislikes: %v\x1b[0m\n", video.Items[0].Statistics.DislikeCount)
+							fmt.Fprintf(v, "\x1b[38;5;6mDislikes: %v\x1b[0m\n~", video.Items[0].Statistics.DislikeCount)
 						}
 
 						fmt.Fprintln(v, "")
-						fmt.Fprintf(v, "\x1b[38;5;208mYour rating: %s\x1b[0m\n\n\n", rating)
-						fmt.Fprint(v, "\x1b[33;1mComments:\x1b[0m\n\n")
+						fmt.Fprintf(v, "\x1b[38;5;208mYour rating: %s\x1b[0m\n~\n~\n", rating)
+						fmt.Fprint(v, "\x1b[33;1mComments:\x1b[0m\n~\n")
 
 						for _, comment := range comments.Items {
 							fmt.Fprintf(v, "\x1b[38;5;6m%s\x1b[0m ", comment.Snippet.AuthorDisplayName)
 							fmt.Fprintf(v, "\x1b[38;5;6m%v %s\x1b[0m \n", comment.Snippet.LikeCount, "Likes")
 							fmt.Fprintf(v, "\x1b[38;5;11m%s\x1b[0m\n", comment.Snippet.PublishedAt)
-							fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", comment.Snippet.TextDisplay)
+							fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n~", comment.Snippet.TextDisplay)
 							fmt.Fprintln(v, "")
 						}
 
