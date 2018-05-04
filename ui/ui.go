@@ -40,6 +40,66 @@ func runcmd(cmd string, shell bool) []byte {
 	return out
 }
 
+func cursorDown(g *gocui.Gui, v *gocui.View) error {
+	var l string
+	var err error
+
+	if v != nil {
+		cx, cy := v.Cursor()
+		if l, err = v.Line(cy + 1); err != nil {
+			l = ""
+		}
+		if l != "" {
+
+			if err := v.SetCursor(cx, cy+1); err != nil {
+				ox, oy := v.Origin()
+				if err := v.SetOrigin(ox, oy+1); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func halfPageDown(g *gocui.Gui, v *gocui.View) error {
+	var l string
+	var err error
+
+	if v != nil {
+		cx, cy := v.Cursor()
+		_, maxY := g.Size()
+		ox, oy := v.Origin()
+
+		if l, err = v.Line(cy + maxY/2); err != nil {
+			l = ""
+		}
+
+		curY := cy + maxY/2
+
+		if l == "" {
+			var line string
+			for i := 0; i < maxY; i++ {
+				if line, err = v.Line(i); err != nil {
+					line = ""
+				}
+
+				if line == "" {
+					curY = i - 1
+					break
+				}
+			}
+		}
+
+		if err := v.SetCursor(cx, curY); err != nil {
+			if err := v.SetOrigin(ox, oy+maxY/2); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func cursorUp(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
 		ox, oy := v.Origin()
@@ -53,12 +113,18 @@ func cursorUp(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func cursorDown(g *gocui.Gui, v *gocui.View) error {
+func halfPageUp(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
 		cx, cy := v.Cursor()
-		if err := v.SetCursor(cx, cy+1); err != nil {
-			ox, oy := v.Origin()
-			if err := v.SetOrigin(ox, oy+1); err != nil {
+		ox, oy := v.Origin()
+		_, maxY := g.Size()
+		cursorMaxY := cy - maxY/2
+		if oy <= 0 {
+			cursorMaxY = 0
+		}
+		if err := v.SetCursor(cx, cursorMaxY); err != nil {
+			originMaxY := oy - maxY/2
+			if err := v.SetOrigin(ox, originMaxY); err != nil {
 				return err
 			}
 		}

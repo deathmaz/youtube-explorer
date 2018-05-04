@@ -14,9 +14,19 @@ func keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
 		return err
 	}
+
+	if err := g.SetKeybinding("", gocui.KeyCtrlD, gocui.ModNone, halfPageDown); err != nil {
+		return err
+	}
+
+	if err := g.SetKeybinding("", gocui.KeyCtrlU, gocui.ModNone, halfPageUp); err != nil {
+		return err
+	}
+
 	if err := g.SetKeybinding("", 'j', gocui.ModNone, cursorDown); err != nil {
 		return err
 	}
+
 	if err := g.SetKeybinding("", gocui.KeyArrowUp, gocui.ModNone, cursorUp); err != nil {
 		return err
 	}
@@ -53,7 +63,15 @@ func keybindings(g *gocui.Gui) error {
 		return err
 	}
 
+	if err := g.SetKeybinding(videosView, 'l', gocui.ModNone, goToVideo); err != nil {
+		return err
+	}
+
 	if err := g.SetKeybinding(channelsView, gocui.KeyEnter, gocui.ModNone, goToPlaylist); err != nil {
+		return err
+	}
+
+	if err := g.SetKeybinding(channelsView, 'l', gocui.ModNone, goToPlaylist); err != nil {
 		return err
 	}
 
@@ -62,6 +80,10 @@ func keybindings(g *gocui.Gui) error {
 	}
 
 	if err := g.SetKeybinding(channelPlaylistsView, gocui.KeyEnter, gocui.ModNone, goToVideos); err != nil {
+		return err
+	}
+
+	if err := g.SetKeybinding(channelPlaylistsView, 'l', gocui.ModNone, goToVideos); err != nil {
 		return err
 	}
 
