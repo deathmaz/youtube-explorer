@@ -353,7 +353,7 @@ func goToVideo(g *gocui.Gui, v *gocui.View) error {
 						}
 
 						fmt.Fprintln(v, "")
-						fmt.Fprintf(v, "\x1b[38;5;208mYout rating: %s\x1b[0m\n\n\n", rating)
+						fmt.Fprintf(v, "\x1b[38;5;208mYour rating: %s\x1b[0m\n\n\n", rating)
 						fmt.Fprint(v, "\x1b[33;1mComments:\x1b[0m\n\n")
 
 						for _, comment := range comments.Items {
@@ -392,6 +392,7 @@ func playVideo(g *gocui.Gui, v *gocui.View) error {
 }
 
 func downloadVideo(g *gocui.Gui, v *gocui.View) error {
+	tspCommand := ""
 	usr, _ := user.Current()
 	outPath := filepath.FromSlash(usr.HomeDir + "/Downloads/")
 	if _, err := os.Stat(config.Conf.DownloadPath); err == nil {
@@ -402,8 +403,12 @@ func downloadVideo(g *gocui.Gui, v *gocui.View) error {
 		}
 	}
 
+	if path, err := exec.LookPath("tsp"); err == nil {
+		tspCommand += "TS_SOCKET=/tmp/y-dl " + path + " "
+	}
+
 	cmd := exec.Command("bash", "-c",
-		"TS_SOCKET=/tmp/y-dl tsp youtube-dl -o '"+outPath+"%(title)s.%(ext)s' -f 'bestvideo[height<="+selectedVideoQuality+"]+bestaudio/best[height<="+selectedVideoQuality+"]' https://www.youtube.com/watch?v="+selectedVideo.ContentDetails.VideoId)
+		tspCommand+"youtube-dl -o '"+outPath+"%(title)s.%(ext)s' -f 'bestvideo[height<="+selectedVideoQuality+"]+bestaudio/best[height<="+selectedVideoQuality+"]' https://www.youtube.com/watch?v="+selectedVideo.ContentDetails.VideoId)
 	err := cmd.Start()
 	if err != nil {
 		log.Fatal(err)
