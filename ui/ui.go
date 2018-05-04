@@ -23,6 +23,7 @@ var (
 	selectedVideoQuality = "720"
 	videoQuality         = []string{"360", "480", "720", "1080"}
 	ratings              = []string{"like", "dislike", "none"}
+	selectedRating       = ""
 )
 
 func runcmd(cmd string, shell bool) []byte {
@@ -335,6 +336,7 @@ func goToVideo(g *gocui.Gui, v *gocui.View) error {
 					rating, _ := api.GetYourRating(video.ContentDetails.VideoId)
 					comments, _ := api.GetComments(video.ContentDetails.VideoId)
 					video, _ := api.GetVideos(video.ContentDetails.VideoId)
+					selectedRating = rating
 
 					g.Update(func(g *gocui.Gui) error {
 						v, err := g.View(videoView)
@@ -423,7 +425,11 @@ func selectQuality(g *gocui.Gui, v *gocui.View) error {
 		v.Title = "Select Video quality"
 
 		for _, quality := range videoQuality {
-			fmt.Fprintln(v, quality)
+			if quality == selectedVideoQuality {
+				fmt.Fprintf(v, "\x1b[38;5;11m%s\x1b[0m\n", quality)
+			} else {
+				fmt.Fprintln(v, quality)
+			}
 		}
 
 		if _, err := g.SetCurrentView(qualityView); err != nil {
@@ -447,7 +453,11 @@ func rateVideo(g *gocui.Gui, v *gocui.View) error {
 		v.Title = "Rate Video"
 
 		for _, rating := range ratings {
-			fmt.Fprintln(v, rating)
+			if selectedRating == rating {
+				fmt.Fprintf(v, "\x1b[38;5;11m%s\x1b[0m\n", rating)
+			} else {
+				fmt.Fprintln(v, rating)
+			}
 		}
 
 		if _, err := g.SetCurrentView(rateVideoView); err != nil {
