@@ -147,6 +147,16 @@ func GetChannel(channelID string) (res *youtube.ChannelListResponse, err error) 
 	return response, err
 }
 
+// GetVideos get video by its id
+func GetVideos(videoID string) (*youtube.VideoListResponse, error) {
+	call := Service.Videos.List("statistics,contentDetails")
+	call = call.Id(videoID)
+	res, err := call.Do()
+	handleError(err, "")
+
+	return res, err
+}
+
 // RateVideo rate video
 func RateVideo(videoID string, rating string) error {
 	call := Service.Videos.Rate(videoID, rating)
@@ -154,8 +164,8 @@ func RateVideo(videoID string, rating string) error {
 	return err
 }
 
-// GetRating get rating for video
-func GetRating(videoID string) (string, error) {
+// GetYourRating get rating for video
+func GetYourRating(videoID string) (string, error) {
 	call := Service.Videos.GetRating(videoID)
 	response, err := call.Do()
 	handleError(err, "")

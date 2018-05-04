@@ -49,14 +49,21 @@ func cursorDown(g *gocui.Gui, v *gocui.View) error {
 		if l, err = v.Line(cy + 1); err != nil {
 			l = ""
 		}
-		if l != "" {
 
+		down := func() error {
 			if err := v.SetCursor(cx, cy+1); err != nil {
 				ox, oy := v.Origin()
 				if err := v.SetOrigin(ox, oy+1); err != nil {
 					return err
 				}
 			}
+			return nil
+		}
+
+		if l != "" && v.Name() != videoView {
+			down()
+		} else if v.Name() == videoView {
+			down()
 		}
 	}
 	return nil
@@ -77,7 +84,7 @@ func halfPageDown(g *gocui.Gui, v *gocui.View) error {
 
 		curY := cy + maxY/2
 
-		if l == "" {
+		if l == "" && v.Name() != videoView {
 			var line string
 			for i := 0; i < maxY; i++ {
 				if line, err = v.Line(i); err != nil {
@@ -113,6 +120,7 @@ func cursorUp(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+// FIXME: sometimes crashes in video view
 func halfPageUp(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
 		cx, cy := v.Cursor()
@@ -324,13 +332,22 @@ func goToVideo(g *gocui.Gui, v *gocui.View) error {
 				fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", video.Snippet.Description)
 
 				go func() {
-					rating, _ := api.GetRating(video.ContentDetails.VideoId)
+					rating, _ := api.GetYourRating(video.ContentDetails.VideoId)
 					comments, _ := api.GetComments(video.ContentDetails.VideoId)
+					video, _ := api.GetVideos(video.ContentDetails.VideoId)
 
 					g.Update(func(g *gocui.Gui) error {
 						v, err := g.View(videoView)
 						if err != nil {
 							return err
+						}
+
+						if len(video.Items) > 0 {
+							fmt.Fprintln(v, "")
+							fmt.Fprintf(v, "\x1b[38;5;6mDuration: %v\x1b[0m\n", video.Items[0].ContentDetails.Duration)
+							fmt.Fprintf(v, "\x1b[38;5;6mTotal views: %v\x1b[0m\n", video.Items[0].Statistics.ViewCount)
+							fmt.Fprintf(v, "\x1b[38;5;6mLikes: %v\x1b[0m\n", video.Items[0].Statistics.LikeCount)
+							fmt.Fprintf(v, "\x1b[38;5;6mDislikes: %v\x1b[0m\n", video.Items[0].Statistics.DislikeCount)
 						}
 
 						fmt.Fprintln(v, "")
