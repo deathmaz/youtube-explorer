@@ -174,13 +174,24 @@ func GetYourRating(videoID string) (string, error) {
 
 // GetCommentThreads get comment threads
 func GetCommentThreads(videoID string) (*youtube.CommentThreadListResponse, error) {
-	call := Service.CommentThreads.List("snippet")
+	call := Service.CommentThreads.List("snippet,replies")
 	call = call.VideoId(videoID)
-	call = call.MaxResults(30)
+	call = call.MaxResults(50)
 	call = call.TextFormat("plainText")
 	response, err := call.Do()
 	handleError(err, "")
 	return response, err
+}
+
+// GetComment get comment for a thread
+func GetComment(threadID string) (*youtube.Comment, error) {
+	call := Service.Comments.List("snippet")
+
+	call = call.Id(threadID)
+	response, err := call.Do()
+	handleError(err, "")
+
+	return response.Items[0], err
 }
 
 // GetComments get comments for a video
@@ -202,6 +213,16 @@ func GetComments(videoID string) (*youtube.CommentListResponse, error) {
 	response, err := call.Do()
 	handleError(err, "")
 
+	return response, err
+}
+
+// GetReply get replies for comment
+func GetReply(commentID string) (*youtube.CommentListResponse, error) {
+	call := Service.Comments.List("snippet")
+	call = call.ParentId(commentID)
+	call = call.MaxResults(10)
+	response, err := call.Do()
+	handleError(err, "")
 	return response, err
 }
 
