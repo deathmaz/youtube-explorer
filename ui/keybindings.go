@@ -78,7 +78,7 @@ func init() {
 			view: "", ch: 'h', mod: gocui.ModNone, action: goBack,
 		},
 		{
-			view: "", ch: 's', mod: gocui.ModNone, action: search,
+			view: "", ch: 's', mod: gocui.ModNone, action: showInput,
 		},
 		{
 			view: "", key: gocui.KeyArrowDown, mod: gocui.ModNone, action: cursorDown,
@@ -133,6 +133,12 @@ func init() {
 		},
 		{
 			view: searchView, key: gocui.KeyEsc, mod: gocui.ModNone, action: goBack,
+		},
+		{
+			view: searchView, key: gocui.KeyEnter, mod: gocui.ModNone, action: performSearch,
+		},
+		{
+			view: searchResultsView, key: gocui.KeyEnter, mod: gocui.ModNone, action: goToSearchVideo,
 		},
 	}
 }

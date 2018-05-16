@@ -24,8 +24,8 @@ func ShowLoading(g *gocui.Gui) error {
 	return nil
 }
 
-// RemoveLoadin remove loading message
-func RemoveLoadin(g *gocui.Gui, prevView string) error {
+// RemoveLoading remove loading message
+func RemoveLoading(g *gocui.Gui, prevView string) error {
 	if err := g.DeleteView(loadingView); err != nil {
 		return err
 	}
@@ -40,9 +40,11 @@ func RemoveLoadin(g *gocui.Gui, prevView string) error {
 func goBack(g *gocui.Gui, v *gocui.View) error {
 	var views []*gocui.View
 	for _, view := range g.Views() {
-		if view.Name() != loadingView {
-			views = append(views, view)
+		if view.Name() == loadingView {
+			continue
 		}
+
+		views = append(views, view)
 	}
 
 	if len(views) > 1 {
@@ -50,11 +52,22 @@ func goBack(g *gocui.Gui, v *gocui.View) error {
 			setGlobalKeybindings(g)
 		}
 
+		if v.Name() == searchResultsView {
+			if err := g.DeleteView(searchView); err != nil {
+				return err
+			}
+		}
+
 		if err := g.DeleteView(views[len(views)-1].Name()); err != nil {
 			return err
 		}
 
-		if _, err := g.SetCurrentView(views[len(views)-2].Name()); err != nil {
+		curView := views[len(views)-2].Name()
+		if curView == searchView {
+			curView = views[len(views)-3].Name()
+		}
+
+		if _, err := g.SetCurrentView(curView); err != nil {
 			return err
 		}
 

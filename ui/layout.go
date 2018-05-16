@@ -40,7 +40,7 @@ func Layout(g *gocui.Gui) error {
 					for _, channel := range subscriptions {
 						fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", channel.Snippet.Title)
 					}
-					RemoveLoadin(g, v.Title)
+					RemoveLoading(g, v.Title)
 					return nil
 				})
 			}()

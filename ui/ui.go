@@ -19,11 +19,14 @@ var (
 	subscriptions        = []*youtube.Subscription{}
 	playlists            = []*youtube.Playlist{}
 	videos               = []*youtube.PlaylistItem{}
-	selectedVideo        *youtube.PlaylistItem
 	selectedVideoQuality = "720"
 	videoQuality         = []string{"360", "480", "720", "1080"}
 	ratings              = []string{"like", "dislike", "none"}
-	selectedRating       = ""
+
+	// SelectedRating selected rating for video
+	SelectedRating = ""
+	// SelectedVideo selected video
+	SelectedVideo *youtube.Video
 )
 
 func runcmd(cmd string, shell bool) []byte {
@@ -174,7 +177,7 @@ func goToPlaylist(g *gocui.Gui, v *gocui.View) error {
 						for _, playlist := range playlists {
 							fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", playlist.Snippet.Title)
 						}
-						RemoveLoadin(g, channelPlaylistsView)
+						RemoveLoading(g, channelPlaylistsView)
 						return nil
 					})
 				}()
@@ -228,7 +231,7 @@ func goToVideos(g *gocui.Gui, v *gocui.View) error {
 						for _, video := range videos {
 							fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", video.Snippet.Title)
 						}
-						RemoveLoadin(g, videosView)
+						RemoveLoading(g, videosView)
 						return nil
 					})
 				}()
@@ -284,7 +287,7 @@ func goToChannelVideos(g *gocui.Gui, v *gocui.View) error {
 						for _, video := range videos {
 							fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", video.Snippet.Title)
 						}
-						RemoveLoadin(g, videosView)
+						RemoveLoading(g, videosView)
 						return nil
 					})
 				}()
@@ -317,62 +320,50 @@ func goToVideo(g *gocui.Gui, v *gocui.View) error {
 
 		v.Wrap = true
 
-		fmt.Fprintln(v, l)
+		// fmt.Fprintln(v, l)
 		for _, video := range videos {
 			if video.Snippet.Title == l {
-				selectedVideo = video
-
 				v.Title = video.Snippet.Title
 				fmt.Fprintf(v, "\x1b[38;5;6m%s\x1b[0m\n", video.ContentDetails.VideoId)
 				fmt.Fprintf(v, "\x1b[38;5;11m%s\x1b[0m\n", video.ContentDetails.VideoPublishedAt)
 				fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", video.Snippet.Description)
 
-				go func() {
-					rating, _ := api.GetYourRating(video.ContentDetails.VideoId)
-					commentThreads, _ := api.GetCommentThreads(video.ContentDetails.VideoId)
-					video, _ := api.GetVideos(video.ContentDetails.VideoId)
-					selectedRating = rating
+				rating, _ := api.GetYourRating(video.ContentDetails.VideoId)
+				commentThreads, _ := api.GetCommentThreads(video.ContentDetails.VideoId)
+				video, _ := api.GetVideos(video.ContentDetails.VideoId)
+				SelectedRating = rating
+				if len(video.Items) > 0 {
+					SelectedVideo = video.Items[0]
+					fmt.Fprintln(v, "~")
+					fmt.Fprintf(v, "\x1b[38;5;6mDuration: %v\x1b[0m\n", video.Items[0].ContentDetails.Duration)
+					fmt.Fprintf(v, "\x1b[38;5;6mTotal views: %v\x1b[0m\n", video.Items[0].Statistics.ViewCount)
+					fmt.Fprintf(v, "\x1b[38;5;6mLikes: %v\x1b[0m\n", video.Items[0].Statistics.LikeCount)
+					fmt.Fprintf(v, "\x1b[38;5;6mDislikes: %v\x1b[0m\n~", video.Items[0].Statistics.DislikeCount)
+				}
 
-					g.Update(func(g *gocui.Gui) error {
-						v, err := g.View(videoView)
-						if err != nil {
-							return err
+				fmt.Fprintln(v, "")
+				fmt.Fprintf(v, "\x1b[38;5;208mYour rating: %s\x1b[0m\n~\n~\n", rating)
+				fmt.Fprint(v, "\x1b[33;1mComments:\x1b[0m\n~\n")
+
+				for _, thread := range commentThreads.Items {
+					comment := thread.Snippet.TopLevelComment
+					fmt.Fprintf(v, "\x1b[38;5;6m%s\x1b[0m ", comment.Snippet.AuthorDisplayName)
+					fmt.Fprintf(v, "\x1b[38;5;6m%v %s\x1b[0m \n", comment.Snippet.LikeCount, "Likes")
+					fmt.Fprintf(v, "\x1b[38;5;11m%s\x1b[0m\n", comment.Snippet.PublishedAt)
+					fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", comment.Snippet.TextDisplay)
+
+					if thread.Replies != nil {
+						fmt.Fprint(v, "\x1b[33;1mReplies:\x1b[0m")
+						comments := thread.Replies.Comments
+						for i := len(comments) - 1; i >= 0; i-- {
+							fmt.Fprintf(v, "\n    \x1b[38;5;6m%s\x1b[0m ", comments[i].Snippet.AuthorDisplayName)
+							fmt.Fprintf(v, "    \x1b[38;5;6m%v %s\x1b[0m \n", comments[i].Snippet.LikeCount, "Likes")
+							fmt.Fprintf(v, "    \x1b[38;5;11m%s\x1b[0m\n", comments[i].Snippet.PublishedAt)
+							fmt.Fprintf(v, "    \x1b[38;5;3m%s\x1b[0m\n", comments[i].Snippet.TextDisplay)
 						}
-
-						if len(video.Items) > 0 {
-							fmt.Fprintln(v, "~")
-							fmt.Fprintf(v, "\x1b[38;5;6mDuration: %v\x1b[0m\n", video.Items[0].ContentDetails.Duration)
-							fmt.Fprintf(v, "\x1b[38;5;6mTotal views: %v\x1b[0m\n", video.Items[0].Statistics.ViewCount)
-							fmt.Fprintf(v, "\x1b[38;5;6mLikes: %v\x1b[0m\n", video.Items[0].Statistics.LikeCount)
-							fmt.Fprintf(v, "\x1b[38;5;6mDislikes: %v\x1b[0m\n~", video.Items[0].Statistics.DislikeCount)
-						}
-
-						fmt.Fprintln(v, "")
-						fmt.Fprintf(v, "\x1b[38;5;208mYour rating: %s\x1b[0m\n~\n~\n", rating)
-						fmt.Fprint(v, "\x1b[33;1mComments:\x1b[0m\n~\n")
-
-						for _, thread := range commentThreads.Items {
-							comment := thread.Snippet.TopLevelComment
-							fmt.Fprintf(v, "\x1b[38;5;6m%s\x1b[0m ", comment.Snippet.AuthorDisplayName)
-							fmt.Fprintf(v, "\x1b[38;5;6m%v %s\x1b[0m \n", comment.Snippet.LikeCount, "Likes")
-							fmt.Fprintf(v, "\x1b[38;5;11m%s\x1b[0m\n", comment.Snippet.PublishedAt)
-							fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", comment.Snippet.TextDisplay)
-
-							if thread.Replies != nil {
-								fmt.Fprint(v, "\x1b[33;1mReplies:\x1b[0m")
-								comments := thread.Replies.Comments
-								for i := len(comments) - 1; i >= 0; i-- {
-									fmt.Fprintf(v, "\n    \x1b[38;5;6m%s\x1b[0m ", comments[i].Snippet.AuthorDisplayName)
-									fmt.Fprintf(v, "    \x1b[38;5;6m%v %s\x1b[0m \n", comments[i].Snippet.LikeCount, "Likes")
-									fmt.Fprintf(v, "    \x1b[38;5;11m%s\x1b[0m\n", comments[i].Snippet.PublishedAt)
-									fmt.Fprintf(v, "    \x1b[38;5;3m%s\x1b[0m\n", comments[i].Snippet.TextDisplay)
-								}
-							}
-							fmt.Fprintln(v, "")
-						}
-						return nil
-					})
-				}()
+					}
+					fmt.Fprintln(v, "")
+				}
 
 				break
 			}
@@ -388,7 +379,7 @@ func goToVideo(g *gocui.Gui, v *gocui.View) error {
 
 func playVideo(g *gocui.Gui, v *gocui.View) error {
 	cmd := exec.Command("bash", "-c",
-		"mpv --ytdl-format='bestvideo[height<="+selectedVideoQuality+"]+bestaudio/best[height<="+selectedVideoQuality+"]' https://www.youtube.com/watch?v="+selectedVideo.ContentDetails.VideoId)
+		"mpv --ytdl-format='bestvideo[height<="+selectedVideoQuality+"]+bestaudio/best[height<="+selectedVideoQuality+"]' https://www.youtube.com/watch?v="+SelectedVideo.Id)
 	err := cmd.Start()
 	if err != nil {
 		log.Fatal(err)
@@ -414,7 +405,7 @@ func downloadVideo(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	cmd := exec.Command("bash", "-c",
-		tspCommand+"youtube-dl -o '"+outPath+"%(title)s.%(ext)s' -f 'bestvideo[height<="+selectedVideoQuality+"]+bestaudio/best[height<="+selectedVideoQuality+"]' https://www.youtube.com/watch?v="+selectedVideo.ContentDetails.VideoId)
+		tspCommand+"youtube-dl -o '"+outPath+"%(title)s.%(ext)s' -f 'bestvideo[height<="+selectedVideoQuality+"]+bestaudio/best[height<="+selectedVideoQuality+"]' https://www.youtube.com/watch?v="+SelectedVideo.Id)
 	err := cmd.Start()
 	if err != nil {
 		log.Fatal(err)
@@ -464,7 +455,7 @@ func rateVideo(g *gocui.Gui, v *gocui.View) error {
 		v.Title = "Rate Video"
 
 		for _, rating := range ratings {
-			if selectedRating == rating {
+			if SelectedRating == rating {
 				fmt.Fprintf(v, "\x1b[38;5;11m%s\x1b[0m\n", rating)
 			} else {
 				fmt.Fprintln(v, rating)
@@ -488,7 +479,7 @@ func rate(g *gocui.Gui, v *gocui.View) error {
 		l = ""
 	}
 
-	e := api.RateVideo(selectedVideo.ContentDetails.VideoId, l)
+	e := api.RateVideo(SelectedVideo.Id, l)
 	if e == nil {
 		goBack(g, v)
 	}

@@ -13,9 +13,11 @@ const (
 	// channelPlaylistsView channel playlists name
 	channelPlaylistsView string = "ChannelPlaylists"
 
-	videosView    string = "Videos"
-	videoView     string = "Video"
-	qualityView   string = "VideoQuality"
-	rateVideoView string = "RateVideo"
-	searchView    string = "searchView"
+	videosView        string = "Videos"
+	videoView         string = "Video"
+	qualityView       string = "VideoQuality"
+	rateVideoView     string = "RateVideo"
+	searchView        string = "searchView"
+	searchResultsView string = "searchResultsView"
+	searchVideoView   string = "searchVideoView"
 )
