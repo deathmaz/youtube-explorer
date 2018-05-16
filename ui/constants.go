@@ -17,4 +17,5 @@ const (
 	videoView     string = "Video"
 	qualityView   string = "VideoQuality"
 	rateVideoView string = "RateVideo"
+	searchView    string = "searchView"
 )

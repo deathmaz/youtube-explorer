@@ -42,6 +42,10 @@ func runcmd(cmd string, shell bool) []byte {
 }
 
 func cursorDown(g *gocui.Gui, v *gocui.View) error {
+	if v.Name() == searchView {
+		return nil
+	}
+
 	if v != nil {
 		cx, cy := v.Cursor()
 		ox, oy := v.Origin()
@@ -535,6 +539,7 @@ func Run() {
 	}
 	defer g.Close()
 
+	g.InputEsc = true
 	g.Highlight = true
 	g.Cursor = true
 	g.SelFgColor = gocui.ColorGreen

@@ -8,4 +8,5 @@ import (
 func main() {
 	config.Parse()
 	ui.Run()
+	// api.Search("rust programming tutorials")
 }

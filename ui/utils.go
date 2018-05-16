@@ -46,6 +46,10 @@ func goBack(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	if len(views) > 1 {
+		if v.Name() == searchView {
+			setGlobalKeybindings(g)
+		}
+
 		if err := g.DeleteView(views[len(views)-1].Name()); err != nil {
 			return err
 		}
@@ -53,6 +57,7 @@ func goBack(g *gocui.Gui, v *gocui.View) error {
 		if _, err := g.SetCurrentView(views[len(views)-2].Name()); err != nil {
 			return err
 		}
+
 	}
 	return nil
 }
