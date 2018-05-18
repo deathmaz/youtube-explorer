@@ -42,6 +42,10 @@ func keybindings(g *gocui.Gui) error {
 		return err
 	}
 
+	if err := g.SetKeybinding("", gocui.KeyEsc, gocui.ModNone, goBack); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -61,7 +65,7 @@ func setGlobalKeybindings(g *gocui.Gui) {
 			continue
 		}
 		if err := g.SetKeybinding(binding.view, binding.getKey(), binding.mod, binding.action); err != nil {
-			log.Fatalf("Error deleting keybindings: %v", err.Error())
+			log.Fatalf("Error setting keybindings: %v", err.Error())
 		}
 	}
 }
@@ -93,16 +97,13 @@ func init() {
 			view: "", key: gocui.KeyArrowUp, mod: gocui.ModNone, action: cursorUp,
 		},
 		{
-			view: videoView, ch: 'p', mod: gocui.ModNone, action: playVideo,
-		},
-		{
 			view: videoView, ch: 'g', mod: gocui.ModNone, action: selectQuality,
 		},
 		{
-			view: videoView, ch: 'r', mod: gocui.ModNone, action: rateVideo,
+			view: videoView, ch: 'c', mod: gocui.ModNone, action: goToVideoChannelVideos,
 		},
 		{
-			view: videoView, ch: 'd', mod: gocui.ModNone, action: downloadVideo,
+			view: videoView, ch: 'w', mod: gocui.ModNone, action: goToVideoChannelPlaylists,
 		},
 		{
 			view: videosView, key: gocui.KeyEnter, mod: gocui.ModNone, action: goToVideo,
@@ -111,10 +112,10 @@ func init() {
 			view: videosView, ch: 'l', mod: gocui.ModNone, action: goToVideo,
 		},
 		{
-			view: channelsView, key: gocui.KeyEnter, mod: gocui.ModNone, action: goToPlaylist,
+			view: channelsView, key: gocui.KeyEnter, mod: gocui.ModNone, action: goToPlaylists,
 		},
 		{
-			view: channelsView, ch: 'l', mod: gocui.ModNone, action: goToPlaylist,
+			view: channelsView, ch: 'l', mod: gocui.ModNone, action: goToPlaylists,
 		},
 		{
 			view: channelsView, ch: 'v', mod: gocui.ModNone, action: goToChannelVideos,
@@ -126,19 +127,43 @@ func init() {
 			view: channelPlaylistsView, ch: 'l', mod: gocui.ModNone, action: goToVideos,
 		},
 		{
-			view: qualityView, key: gocui.KeyEnter, mod: gocui.ModNone, action: pickQuality,
+			view: qualityView, key: gocui.KeyEnter, mod: gocui.ModNone,
+			action: func(g *gocui.Gui, v *gocui.View) error {
+				return pickQuality(g, v)
+			},
 		},
 		{
-			view: rateVideoView, key: gocui.KeyEnter, mod: gocui.ModNone, action: rate,
+			view: videoView, ch: 'p', mod: gocui.ModNone,
+			action: func(g *gocui.Gui, v *gocui.View) error {
+				return playVideo(g, v)
+			},
 		},
 		{
-			view: searchView, key: gocui.KeyEsc, mod: gocui.ModNone, action: goBack,
+			view: videoView, ch: 'd', mod: gocui.ModNone,
+			action: func(g *gocui.Gui, v *gocui.View) error {
+				return downloadVideo(g, v)
+			},
+		},
+		{
+			view: videoView, ch: 'r', mod: gocui.ModNone,
+			action: func(g *gocui.Gui, v *gocui.View) error {
+				return rateVideo(g, v)
+			},
+		},
+		{
+			view: rateVideoView, key: gocui.KeyEnter, mod: gocui.ModNone,
+			action: func(g *gocui.Gui, v *gocui.View) error {
+				return rate(g, v)
+			},
 		},
 		{
 			view: searchView, key: gocui.KeyEnter, mod: gocui.ModNone, action: performSearch,
 		},
 		{
 			view: searchResultsView, key: gocui.KeyEnter, mod: gocui.ModNone, action: goToSearchVideo,
+		},
+		{
+			view: searchResultsView, ch: 'l', mod: gocui.ModNone, action: goToSearchVideo,
 		},
 	}
 }

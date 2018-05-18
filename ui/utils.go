@@ -2,7 +2,9 @@ package ui
 
 import (
 	"fmt"
+	"log"
 	"math"
+	"os/exec"
 
 	"github.com/jroimartin/gocui"
 )
@@ -38,41 +40,35 @@ func RemoveLoading(g *gocui.Gui, prevView string) error {
 }
 
 func goBack(g *gocui.Gui, v *gocui.View) error {
-	var views []*gocui.View
-	for _, view := range g.Views() {
-		if view.Name() == loadingView {
-			continue
-		}
-
-		views = append(views, view)
-	}
-
-	if len(views) > 1 {
+	if len(history) > 1 {
+		curView := history[len(history)-2]
 		if v.Name() == searchView {
 			setGlobalKeybindings(g)
 		}
 
-		if v.Name() == searchResultsView {
-			if err := g.DeleteView(searchView); err != nil {
-				return err
-			}
-		}
+		history = history[:len(history)-1]
 
-		if err := g.DeleteView(views[len(views)-1].Name()); err != nil {
+		if _, err := setCurrentViewOnTop(g, curView, false); err != nil {
 			return err
 		}
-
-		curView := views[len(views)-2].Name()
-		if curView == searchView {
-			curView = views[len(views)-3].Name()
-		}
-
-		if _, err := g.SetCurrentView(curView); err != nil {
-			return err
-		}
-
 	}
+
 	return nil
+}
+
+func runcmd(cmd string, shell bool) []byte {
+	if shell {
+		err := exec.Command("bash", "-c", cmd).Start()
+		if err != nil {
+			log.Fatal(err)
+			panic("some error found")
+		}
+	}
+	out, err := exec.Command(cmd).Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return out
 }
 
 // Round round
