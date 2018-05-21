@@ -27,6 +27,7 @@ var (
 	SelectedRating = ""
 	// SelectedVideo selected video
 	SelectedVideo *youtube.Video
+	viewData      = make(map[string]map[string]string)
 )
 
 func cursorDown(g *gocui.Gui, v *gocui.View) error {
@@ -147,6 +148,8 @@ func goToPlaylists(g *gocui.Gui, v *gocui.View) error {
 		if subscription.Snippet.Title == l {
 			res, _ := api.GetChannelPlaylistItems(subscription.Snippet.ResourceId.ChannelId)
 			playlists = res.Items
+			viewData[channelPlaylistsView]["pageToken"] = res.NextPageToken
+			viewData[channelPlaylistsView]["channelID"] = subscription.Snippet.ResourceId.ChannelId
 
 			for _, playlist := range playlists {
 				fmt.Fprintf(view, "\x1b[38;5;3m%s\x1b[0m\n", playlist.Snippet.Title)
@@ -181,6 +184,8 @@ func goToVideos(g *gocui.Gui, v *gocui.View) error {
 		if playlist.Snippet.Title == l {
 			res, _ := api.GetPlaylistItems(playlist.Id)
 			videos = res.Items
+			viewData[videosView]["pageToken"] = res.NextPageToken
+			viewData[videosView]["playlistID"] = playlist.Id
 
 			for _, video := range videos {
 				fmt.Fprintf(view, "\x1b[38;5;3m%s\x1b[0m\n", video.Snippet.Title)
@@ -207,6 +212,8 @@ func goToVideoChannelPlaylists(g *gocui.Gui, v *gocui.View) error {
 
 	res, _ := api.GetChannelPlaylistItems(SelectedVideo.Snippet.ChannelId)
 	playlists = res.Items
+	viewData[channelPlaylistsView]["pageToken"] = res.NextPageToken
+	viewData[channelPlaylistsView]["channelID"] = SelectedVideo.Snippet.ChannelId
 
 	for _, playlist := range playlists {
 		fmt.Fprintf(view, "\x1b[38;5;3m%s\x1b[0m\n", playlist.Snippet.Title)
@@ -230,6 +237,8 @@ func goToVideoChannelVideos(g *gocui.Gui, v *gocui.View) error {
 	channel, _ := api.GetChannel(SelectedVideo.Snippet.ChannelId)
 	res, _ := api.GetPlaylistItems(channel.Items[0].ContentDetails.RelatedPlaylists.Uploads)
 	videos = res.Items
+	viewData[videosView]["pageToken"] = res.NextPageToken
+	viewData[videosView]["playlistID"] = channel.Items[0].ContentDetails.RelatedPlaylists.Uploads
 
 	for _, video := range videos {
 		fmt.Fprintf(view, "\x1b[38;5;3m%s\x1b[0m\n", video.Snippet.Title)
@@ -256,20 +265,16 @@ func goToChannelVideos(g *gocui.Gui, v *gocui.View) error {
 
 	for _, subscription := range subscriptions {
 		if subscription.Snippet.Title == l {
-			// go func() {
-			// ShowLoading(g)
 			channel, _ := api.GetChannel(subscription.Snippet.ResourceId.ChannelId)
 			res, _ := api.GetPlaylistItems(channel.Items[0].ContentDetails.RelatedPlaylists.Uploads)
 			videos = res.Items
+			viewData[videosView]["pageToken"] = res.NextPageToken
+			viewData[videosView]["playlistID"] = channel.Items[0].ContentDetails.RelatedPlaylists.Uploads
 
-			// g.Update(func(g *gocui.Gui) error {
 			for _, video := range videos {
 				fmt.Fprintf(view, "\x1b[38;5;3m%s\x1b[0m\n", video.Snippet.Title)
 			}
-			// RemoveLoading(g, videosView)
-			// return nil
-			// })
-			// }()
+
 			if _, err := setCurrentViewOnTop(g, videosView, true); err != nil {
 				return err
 			}
@@ -509,5 +514,26 @@ func Run() {
 
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Panicln(err)
+	}
+}
+
+func init() {
+	viewData[videosView] = map[string]string{
+		"pageToken":  "",
+		"playlistID": "",
+	}
+
+	viewData[channelsView] = map[string]string{
+		"pageToken": "",
+	}
+
+	viewData[channelPlaylistsView] = map[string]string{
+		"pageToken": "",
+		"channelID": "",
+	}
+
+	viewData[searchResultsView] = map[string]string{
+		"pageToken": "",
+		"query":     "",
 	}
 }

@@ -28,7 +28,7 @@ var (
 // }
 // }
 
-func showInput(g *gocui.Gui, v *gocui.View) error {
+func showSearchInput(g *gocui.Gui, v *gocui.View) error {
 	if _, err := setCurrentViewOnTop(g, searchView, true); err != nil {
 		return err
 	}
@@ -56,22 +56,26 @@ func performSearch(g *gocui.Gui, v *gocui.View) error {
 	setGlobalKeybindings(g)
 	text := v.ViewBuffer()
 	if len(strings.TrimSpace(text)) > 0 {
+		viewData[searchResultsView]["query"] = text
+
 		response, _ := api.Search(text, "video")
 		videosList = response.Items
 		// Group video, channel, and playlist results in separate lists.
 		videos := make(map[string]string)
-		channels := make(map[string]string)
-		playlists := make(map[string]string)
+		/* channels := make(map[string]string)
+		playlists := make(map[string]string) */
+
+		viewData[searchResultsView]["pageToken"] = response.NextPageToken
 
 		// Iterate through each item and add it to the correct list.
 		for _, item := range response.Items {
 			switch item.Id.Kind {
 			case "youtube#video":
 				videos[item.Id.VideoId] = item.Snippet.Title
-			case "youtube#channel":
-				channels[item.Id.ChannelId] = item.Snippet.Title
-			case "youtube#playlist":
-				playlists[item.Id.PlaylistId] = item.Snippet.Title
+				/* case "youtube#channel":
+					channels[item.Id.ChannelId] = item.Snippet.Title
+				case "youtube#playlist":
+					playlists[item.Id.PlaylistId] = item.Snippet.Title */
 			}
 		}
 

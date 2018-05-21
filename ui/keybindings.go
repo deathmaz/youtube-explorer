@@ -82,7 +82,7 @@ func init() {
 			view: "", ch: 'h', mod: gocui.ModNone, action: goBack,
 		},
 		{
-			view: "", ch: 's', mod: gocui.ModNone, action: showInput,
+			view: "", ch: 's', mod: gocui.ModNone, action: showSearchInput,
 		},
 		{
 			view: "", key: gocui.KeyArrowDown, mod: gocui.ModNone, action: cursorDown,
@@ -113,6 +113,9 @@ func init() {
 		},
 		{
 			view: channelsView, key: gocui.KeyEnter, mod: gocui.ModNone, action: goToPlaylists,
+		},
+		{
+			view: "", ch: 'n', mod: gocui.ModNone, action: nextPage,
 		},
 		{
 			view: channelsView, ch: 'l', mod: gocui.ModNone, action: goToPlaylists,

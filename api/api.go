@@ -105,34 +105,78 @@ func handleError(err error, message string) {
 	}
 }
 
-// GetMySubscriptions get channels list for current user
-func GetMySubscriptions() (res *youtube.SubscriptionListResponse, err error) {
+func subscriptionsListCall() *youtube.SubscriptionsListCall {
 	call := Service.Subscriptions.List("contentDetails,snippet")
 	call = call.Mine(true)
 	call = call.MaxResults(50)
+	return call
+}
+
+// GetMySubscriptions get channels list for current user
+func GetMySubscriptions() (res *youtube.SubscriptionListResponse, err error) {
+	call := subscriptionsListCall()
 	response, err := call.Do()
 	handleError(err, "")
 
 	return response, err
+}
+
+// GetMySubscriptionsNextPage get next page results for my subscriptions
+func GetMySubscriptionsNextPage(pageToken string) (*youtube.SubscriptionListResponse, error) {
+	call := subscriptionsListCall()
+	call = call.PageToken(pageToken)
+	response, err := call.Do()
+	handleError(err, "Error getting next subscriptions page")
+
+	return response, err
+
+}
+
+func channelPlaylistItemsCall(channelID string) *youtube.PlaylistsListCall {
+	call := Service.Playlists.List("contentDetails,snippet")
+	call = call.ChannelId(channelID)
+	call = call.MaxResults(50)
+	return call
 }
 
 // GetChannelPlaylistItems get playlists for channel
 func GetChannelPlaylistItems(channelID string) (res *youtube.PlaylistListResponse, err error) {
-	call := Service.Playlists.List("contentDetails,snippet")
-	call = call.ChannelId(channelID)
-	call = call.MaxResults(50)
+	call := channelPlaylistItemsCall(channelID)
 	response, err := call.Do()
 	handleError(err, "")
 
 	return response, err
 }
 
-// GetPlaylistItems get playlist items
-func GetPlaylistItems(playlistID string) (res *youtube.PlaylistItemListResponse, err error) {
+// GetChannelPlaylistItemsNextPage get next page for channel playlist items
+func GetChannelPlaylistItemsNextPage(channelID string, pageToken string) (res *youtube.PlaylistListResponse, err error) {
+	call := channelPlaylistItemsCall(channelID)
+	call = call.PageToken(pageToken)
+	response, err := call.Do()
+	handleError(err, "")
+
+	return response, err
+}
+
+func playlistItemsCall(playlistID string) *youtube.PlaylistItemsListCall {
 	call := Service.PlaylistItems.List("contentDetails,snippet")
 	call = call.PlaylistId(playlistID)
 	call = call.MaxResults(50)
+	return call
+}
 
+// GetPlaylistItems get playlist items
+func GetPlaylistItems(playlistID string) (res *youtube.PlaylistItemListResponse, err error) {
+	call := playlistItemsCall(playlistID)
+	response, err := call.Do()
+	handleError(err, "")
+	return response, err
+}
+
+// GetPlaylistItemsNextPage get next page with playlist items
+func GetPlaylistItemsNextPage(playlistID string, pageToken string) (res *youtube.PlaylistItemListResponse, err error) {
+	call := playlistItemsCall(playlistID)
+	call = call.PageToken(pageToken)
 	response, err := call.Do()
 	handleError(err, "")
 	return response, err
@@ -226,12 +270,27 @@ func GetReply(commentID string) (*youtube.CommentListResponse, error) {
 	return response, err
 }
 
-// Search search something
-func Search(query string, sourceType string) (*youtube.SearchListResponse, error) {
+func searchCall(query string, sourceType string) *youtube.SearchListCall {
 	call := Service.Search.List("id,snippet").
 		Q(query).
 		MaxResults(50).
 		Type(sourceType)
+	return call
+}
+
+// Search search something
+func Search(query string, sourceType string) (*youtube.SearchListResponse, error) {
+	call := searchCall(query, sourceType)
+	response, err := call.Do()
+	handleError(err, "Error searching")
+	return response, err
+}
+
+// GetSearchNextPage get next page with search results
+func GetSearchNextPage(query string, sourceType string, pageToken string) (*youtube.SearchListResponse, error) {
+	call := searchCall(query, sourceType)
+	call.PageToken(pageToken)
+
 	response, err := call.Do()
 	handleError(err, "Error searching")
 	return response, err

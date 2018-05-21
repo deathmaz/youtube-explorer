@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	history = []string{}
+	history       = []string{}
+	nextPageToken = ""
 )
 
 func setCurrentViewOnTop(g *gocui.Gui, name string, writeHistory bool) (*gocui.View, error) {
@@ -113,6 +114,7 @@ func layout(g *gocui.Gui) error {
 			ShowLoading(g)
 			response, _ := api.GetMySubscriptions()
 			subscriptions = response.Items
+			nextPageToken = response.NextPageToken
 
 			v, err := g.View(channelsView)
 			if err != nil {
@@ -123,6 +125,7 @@ func layout(g *gocui.Gui) error {
 			for _, channel := range subscriptions {
 				fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", channel.Snippet.Title)
 			}
+			viewData[channelsView]["pageToken"] = response.NextPageToken
 			RemoveLoading(g, v.Title)
 		} else {
 			for _, channel := range subscriptions {
