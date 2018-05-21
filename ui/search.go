@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"net/url"
 	"strings"
 
 	"github.com/deathmaz/my-youtube/api"
@@ -54,7 +55,15 @@ func performSearch(g *gocui.Gui, v *gocui.View) error {
 
 	setGlobalKeybindings(g)
 	text := v.ViewBuffer()
-	if len(strings.TrimSpace(text)) > 0 {
+	if len(strings.TrimSpace(text)) == 0 {
+		return nil
+	}
+
+	u, err := url.Parse(text)
+	if err == nil && strings.Contains(u.Hostname(), "youtube.com") {
+		vidID := u.Query().Get("v")
+		displayVideoPage(g, v, strings.TrimSpace(vidID))
+	} else {
 		viewData[searchResultsView]["query"] = text
 
 		response, _ := api.Search(text, "video")

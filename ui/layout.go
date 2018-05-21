@@ -48,14 +48,13 @@ func layout(g *gocui.Gui) error {
 		v.Wrap = true
 	}
 
-	if v, err := g.SetView(searchView, maxX/2-20, maxY/2, maxX/2+20, maxY/2+2); err != nil {
+	if v, err := g.SetView(searchView, maxX/2-40, maxY/2, maxX/2+40, maxY/2+2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 		// var DefaultEditor gocui.Editor = gocui.EditorFunc(customEditor)
 
 		v.Editable = true
-		v.Wrap = true
 		// v.Editor = DefaultEditor
 	}
 
