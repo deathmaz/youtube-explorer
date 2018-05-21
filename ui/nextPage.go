@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"fmt"
-
 	"github.com/deathmaz/my-youtube/api"
 	"github.com/jroimartin/gocui"
 )
@@ -22,7 +20,7 @@ func nextPage(g *gocui.Gui, v *gocui.View) error {
 
 			for _, channel := range res.Items {
 				subscriptions = append(subscriptions, channel)
-				fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", channel.Snippet.Title)
+				regularText(v, channel.Snippet.Title)
 			}
 		}
 
@@ -34,7 +32,7 @@ func nextPage(g *gocui.Gui, v *gocui.View) error {
 
 			for _, video := range res.Items {
 				videos = append(videos, video)
-				fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", video.Snippet.Title)
+				regularText(v, video.Snippet.Title)
 			}
 		}
 
@@ -57,7 +55,7 @@ func nextPage(g *gocui.Gui, v *gocui.View) error {
 		viewData[channelPlaylistsView]["pageToken"] = res.NextPageToken
 		for _, playlist := range res.Items {
 			playlists = append(playlists, playlist)
-			fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", playlist.Snippet.Title)
+			regularText(v, playlist.Snippet.Title)
 		}
 	}
 

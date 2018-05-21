@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/deathmaz/my-youtube/api"
@@ -152,7 +153,7 @@ func goToPlaylists(g *gocui.Gui, v *gocui.View) error {
 			viewData[channelPlaylistsView]["channelID"] = subscription.Snippet.ResourceId.ChannelId
 
 			for _, playlist := range playlists {
-				fmt.Fprintf(view, "\x1b[38;5;3m%s\x1b[0m\n", playlist.Snippet.Title)
+				regularText(view, playlist.Snippet.Title)
 			}
 			RemoveLoading(g, channelPlaylistsView)
 			break
@@ -188,7 +189,7 @@ func goToVideos(g *gocui.Gui, v *gocui.View) error {
 			viewData[videosView]["playlistID"] = playlist.Id
 
 			for _, video := range videos {
-				fmt.Fprintf(view, "\x1b[38;5;3m%s\x1b[0m\n", video.Snippet.Title)
+				regularText(view, video.Snippet.Title)
 			}
 
 			break
@@ -216,7 +217,7 @@ func goToVideoChannelPlaylists(g *gocui.Gui, v *gocui.View) error {
 	viewData[channelPlaylistsView]["channelID"] = SelectedVideo.Snippet.ChannelId
 
 	for _, playlist := range playlists {
-		fmt.Fprintf(view, "\x1b[38;5;3m%s\x1b[0m\n", playlist.Snippet.Title)
+		regularText(view, playlist.Snippet.Title)
 	}
 
 	return nil
@@ -241,8 +242,7 @@ func goToVideoChannelVideos(g *gocui.Gui, v *gocui.View) error {
 	viewData[videosView]["playlistID"] = channel.Items[0].ContentDetails.RelatedPlaylists.Uploads
 
 	for _, video := range videos {
-		fmt.Fprintf(view, "\x1b[38;5;3m%s\x1b[0m\n", video.Snippet.Title)
-		// fmt.Fprintf(view, "\x1b[38;5;3m%s\x1b[0m\n", video.Snippet.PlaylistId)
+		regularText(view, video.Snippet.Title)
 	}
 
 	return nil
@@ -272,7 +272,7 @@ func goToChannelVideos(g *gocui.Gui, v *gocui.View) error {
 			viewData[videosView]["playlistID"] = channel.Items[0].ContentDetails.RelatedPlaylists.Uploads
 
 			for _, video := range videos {
-				fmt.Fprintf(view, "\x1b[38;5;3m%s\x1b[0m\n", video.Snippet.Title)
+				regularText(view, video.Snippet.Title)
 			}
 
 			if _, err := setCurrentViewOnTop(g, videosView, true); err != nil {
@@ -328,35 +328,36 @@ func displayVideoPage(g *gocui.Gui, v *gocui.View, vidID string) error {
 		vid := video.Items[0]
 		view.Title = vid.Snippet.Title
 		SelectedVideo = vid
-		fmt.Fprintf(view, "\x1b[38;5;6m%s\x1b[0m\n", vid.Id)
-		fmt.Fprintf(view, "\x1b[38;5;11m%s\x1b[0m\n", vid.Snippet.PublishedAt)
-		fmt.Fprintf(view, "\x1b[38;5;3m%s\x1b[0m\n", vid.Snippet.Description)
-		fmt.Fprintln(view, "~")
-		fmt.Fprintf(view, "\x1b[38;5;6mDuration: %v\x1b[0m\n", vid.ContentDetails.Duration)
-		fmt.Fprintf(view, "\x1b[38;5;6mTotal views: %v\x1b[0m\n", vid.Statistics.ViewCount)
-		fmt.Fprintf(view, "\x1b[38;5;6mLikes: %v\x1b[0m\n", vid.Statistics.LikeCount)
-		fmt.Fprintf(view, "\x1b[38;5;6mDislikes: %v\x1b[0m\n~", vid.Statistics.DislikeCount)
+		blueTextLn(view, vid.Id, "")
+		highlightTextLn(view, vid.Snippet.PublishedAt, "")
+		regularText(view, vid.Snippet.Description)
+		fmt.Fprintln(view, "")
+		blueTextLn(view, vid.ContentDetails.Duration, "Duration: ")
+		blueTextLn(view, strconv.FormatUint(vid.Statistics.ViewCount, 10), "Total view: ")
+		blueTextLn(view, strconv.FormatUint(vid.Statistics.LikeCount, 10), "Likes: ")
+		blueTextLn(view, strconv.FormatUint(vid.Statistics.DislikeCount, 10), "Dislikes: ")
 	}
 
 	fmt.Fprintln(view, "")
 	fmt.Fprintf(view, "\x1b[38;5;208mYour rating: %s\x1b[0m\n~\n~\n", rating)
-	fmt.Fprint(view, "\x1b[33;1mComments:\x1b[0m\n~\n")
+	headerText(view, "Comments:")
 
 	for _, thread := range commentThreads.Items {
 		comment := thread.Snippet.TopLevelComment
-		fmt.Fprintf(view, "\x1b[38;5;6m%s\x1b[0m ", comment.Snippet.AuthorDisplayName)
-		fmt.Fprintf(view, "\x1b[38;5;6m%v %s\x1b[0m \n", comment.Snippet.LikeCount, "Likes")
-		fmt.Fprintf(view, "\x1b[38;5;11m%s\x1b[0m\n", comment.Snippet.PublishedAt)
-		fmt.Fprintf(view, "\x1b[38;5;3m%s\x1b[0m\n", comment.Snippet.TextDisplay)
+		blueText(view, comment.Snippet.AuthorDisplayName+" ", "")
+		blueTextLn(view, strconv.FormatInt(comment.Snippet.LikeCount, 10)+" Likes", "")
+		highlightTextLn(view, comment.Snippet.PublishedAt, "")
+		regularText(view, comment.Snippet.TextDisplay)
 
 		if thread.Replies != nil {
-			fmt.Fprint(view, "\x1b[33;1mReplies:\x1b[0m")
+			headerText(view, "Replies:")
 			comments := thread.Replies.Comments
 			for i := len(comments) - 1; i >= 0; i-- {
-				fmt.Fprintf(view, "\n    \x1b[38;5;6m%s\x1b[0m ", comments[i].Snippet.AuthorDisplayName)
-				fmt.Fprintf(view, "    \x1b[38;5;6m%v %s\x1b[0m \n", comments[i].Snippet.LikeCount, "Likes")
-				fmt.Fprintf(view, "    \x1b[38;5;11m%s\x1b[0m\n", comments[i].Snippet.PublishedAt)
-				fmt.Fprintf(view, "    \x1b[38;5;3m%s\x1b[0m\n", comments[i].Snippet.TextDisplay)
+				blueText(view, "    "+comments[i].Snippet.AuthorDisplayName+" ", "")
+				blueTextLn(view, strconv.FormatInt(comments[i].Snippet.LikeCount, 10)+" Likes", "")
+				highlightTextLn(view, "    "+comments[i].Snippet.PublishedAt, "")
+				fmt.Fprint(view, "    ")
+				regularText(view, comments[i].Snippet.TextDisplay)
 			}
 		}
 		fmt.Fprintln(view, "")
@@ -415,7 +416,7 @@ func selectQuality(g *gocui.Gui, v *gocui.View) error {
 
 	for _, quality := range videoQuality {
 		if quality == selectedVideoQuality {
-			fmt.Fprintf(view, "\x1b[38;5;11m%s\x1b[0m\n", quality)
+			highlightTextLn(view, quality, "")
 		} else {
 			fmt.Fprintln(view, quality)
 		}
@@ -452,7 +453,7 @@ func rateVideo(g *gocui.Gui, v *gocui.View) error {
 
 	for _, rating := range ratings {
 		if SelectedRating == rating {
-			fmt.Fprintf(view, "\x1b[38;5;11m%s\x1b[0m\n", rating)
+			highlightTextLn(view, rating, "")
 		} else {
 			fmt.Fprintln(view, rating)
 		}

@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/deathmaz/my-youtube/api"
@@ -96,7 +95,7 @@ func performSearch(g *gocui.Gui, v *gocui.View) error {
 func printIDs(v *gocui.View, sectionName string, matches map[string]string) {
 	// fmt.Fprintf(v, "%v:\n", sectionName)
 	for id, title := range matches {
-		fmt.Fprintf(v, "[%v] %v\n", id, title)
+		regularText(v, "["+id+"] "+title+"")
 	}
 	// fmt.Fprintf(v, "\n\n")
 }

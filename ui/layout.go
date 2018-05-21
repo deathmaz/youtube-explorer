@@ -123,7 +123,7 @@ func layout(g *gocui.Gui) error {
 			v.Clear()
 
 			for _, channel := range subscriptions {
-				fmt.Fprintf(v, "\x1b[38;5;3m%s\x1b[0m\n", channel.Snippet.Title)
+				regularText(v, channel.Snippet.Title)
 			}
 			viewData[channelsView]["pageToken"] = response.NextPageToken
 			RemoveLoading(g, v.Title)
