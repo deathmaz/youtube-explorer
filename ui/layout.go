@@ -48,13 +48,14 @@ func layout(g *gocui.Gui) error {
 		v.Wrap = true
 	}
 
-	if v, err := g.SetView(searchView, maxX/2-40, maxY/2, maxX/2+40, maxY/2+2); err != nil {
+	if v, err := g.SetView(searchView, maxX/2-25, maxY/2-3, maxX/2+25, maxY/2+3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 		// var DefaultEditor gocui.Editor = gocui.EditorFunc(customEditor)
 
 		v.Editable = true
+		v.Wrap = true
 		// v.Editor = DefaultEditor
 	}
 
@@ -110,22 +111,27 @@ func layout(g *gocui.Gui) error {
 		v.Title = channelsView
 		v.Wrap = true
 		if len(subscriptions) == 0 {
-			ShowLoading(g)
-			response, _ := api.GetMySubscriptions()
-			subscriptions = response.Items
-			nextPageToken = response.NextPageToken
+			go func() {
+				ShowLoading(g)
+				response, _ := api.MySubscriptions()
+				subscriptions = response.Items
+				nextPageToken = response.NextPageToken
 
-			v, err := g.View(channelsView)
-			if err != nil {
-				return err
-			}
-			v.Clear()
+				g.Update(func(g *gocui.Gui) error {
+					v, err := g.View(channelsView)
+					if err != nil {
+						return err
+					}
+					v.Clear()
 
-			for _, channel := range subscriptions {
-				regularText(v, channel.Snippet.Title)
-			}
-			viewData[channelsView]["pageToken"] = response.NextPageToken
-			RemoveLoading(g, v.Title)
+					for _, channel := range subscriptions {
+						regularText(v, channel.Snippet.Title)
+					}
+					viewData[channelsView]["pageToken"] = response.NextPageToken
+					RemoveLoading(g, v)
+					return nil
+				})
+			}()
 		} else {
 			for _, channel := range subscriptions {
 				fmt.Fprintln(v, channel.Snippet.Title)

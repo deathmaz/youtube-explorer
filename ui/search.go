@@ -62,6 +62,8 @@ func performSearch(g *gocui.Gui, v *gocui.View) error {
 	u, err := url.Parse(text)
 	if err == nil && strings.Contains(u.Hostname(), "youtube.com") {
 		vidID := u.Query().Get("v")
+		// FIXME: temporary workaround of gocui paste bug
+		vidID = SpaceMap(vidID)
 		displayVideoPage(g, v, strings.TrimSpace(vidID))
 	} else {
 		viewData[searchResultsView]["query"] = text
@@ -106,7 +108,6 @@ func printIDs(v *gocui.View, sectionName string, matches map[string]string) {
 	for id, title := range matches {
 		regularText(v, "["+id+"] "+title+"")
 	}
-	// fmt.Fprintf(v, "\n\n")
 }
 
 func goToSearchVideo(g *gocui.Gui, v *gocui.View) error {

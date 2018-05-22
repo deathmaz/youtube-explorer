@@ -112,8 +112,8 @@ func subscriptionsListCall() *youtube.SubscriptionsListCall {
 	return call
 }
 
-// GetMySubscriptions get channels list for current user
-func GetMySubscriptions() (res *youtube.SubscriptionListResponse, err error) {
+// MySubscriptions get channels list for current user
+func MySubscriptions() (res *youtube.SubscriptionListResponse, err error) {
 	call := subscriptionsListCall()
 	response, err := call.Do()
 	handleError(err, "")
@@ -121,8 +121,8 @@ func GetMySubscriptions() (res *youtube.SubscriptionListResponse, err error) {
 	return response, err
 }
 
-// GetMySubscriptionsNextPage get next page results for my subscriptions
-func GetMySubscriptionsNextPage(pageToken string) (*youtube.SubscriptionListResponse, error) {
+// MySubscriptionsNextPage get next page results for my subscriptions
+func MySubscriptionsNextPage(pageToken string) (*youtube.SubscriptionListResponse, error) {
 	call := subscriptionsListCall()
 	call = call.PageToken(pageToken)
 	response, err := call.Do()
@@ -139,8 +139,8 @@ func channelPlaylistItemsCall(channelID string) *youtube.PlaylistsListCall {
 	return call
 }
 
-// GetChannelPlaylistItems get playlists for channel
-func GetChannelPlaylistItems(channelID string) (res *youtube.PlaylistListResponse, err error) {
+// ChannelPlaylistItems get playlists for channel
+func ChannelPlaylistItems(channelID string) (res *youtube.PlaylistListResponse, err error) {
 	call := channelPlaylistItemsCall(channelID)
 	response, err := call.Do()
 	handleError(err, "")
@@ -148,8 +148,8 @@ func GetChannelPlaylistItems(channelID string) (res *youtube.PlaylistListRespons
 	return response, err
 }
 
-// GetChannelPlaylistItemsNextPage get next page for channel playlist items
-func GetChannelPlaylistItemsNextPage(channelID string, pageToken string) (res *youtube.PlaylistListResponse, err error) {
+// ChannelPlaylistItemsNextPage get next page for channel playlist items
+func ChannelPlaylistItemsNextPage(channelID string, pageToken string) (res *youtube.PlaylistListResponse, err error) {
 	call := channelPlaylistItemsCall(channelID)
 	call = call.PageToken(pageToken)
 	response, err := call.Do()
@@ -165,16 +165,16 @@ func playlistItemsCall(playlistID string) *youtube.PlaylistItemsListCall {
 	return call
 }
 
-// GetPlaylistItems get playlist items
-func GetPlaylistItems(playlistID string) (res *youtube.PlaylistItemListResponse, err error) {
+// PlaylistItems get playlist items
+func PlaylistItems(playlistID string) (res *youtube.PlaylistItemListResponse, err error) {
 	call := playlistItemsCall(playlistID)
 	response, err := call.Do()
 	handleError(err, "")
 	return response, err
 }
 
-// GetPlaylistItemsNextPage get next page with playlist items
-func GetPlaylistItemsNextPage(playlistID string, pageToken string) (res *youtube.PlaylistItemListResponse, err error) {
+// PlaylistItemsNextPage get next page with playlist items
+func PlaylistItemsNextPage(playlistID string, pageToken string) (res *youtube.PlaylistItemListResponse, err error) {
 	call := playlistItemsCall(playlistID)
 	call = call.PageToken(pageToken)
 	response, err := call.Do()
@@ -182,8 +182,8 @@ func GetPlaylistItemsNextPage(playlistID string, pageToken string) (res *youtube
 	return response, err
 }
 
-// GetChannel get channel by its id
-func GetChannel(channelID string) (res *youtube.ChannelListResponse, err error) {
+// Channel get channel by its id
+func Channel(channelID string) (res *youtube.ChannelListResponse, err error) {
 	call := Service.Channels.List("contentDetails,snippet")
 	call = call.Id(channelID)
 	response, err := call.Do()
@@ -191,8 +191,8 @@ func GetChannel(channelID string) (res *youtube.ChannelListResponse, err error) 
 	return response, err
 }
 
-// GetVideos get video by its id
-func GetVideos(videoID string) (*youtube.VideoListResponse, error) {
+// Videos get video by its id
+func Videos(videoID string) (*youtube.VideoListResponse, error) {
 	call := Service.Videos.List("snippet,statistics,contentDetails")
 	call = call.Id(videoID)
 	res, err := call.Do()
@@ -208,16 +208,16 @@ func RateVideo(videoID string, rating string) error {
 	return err
 }
 
-// GetYourRating get rating for video
-func GetYourRating(videoID string) (string, error) {
+// YourRating get rating for video
+func YourRating(videoID string) (string, error) {
 	call := Service.Videos.GetRating(videoID)
 	response, err := call.Do()
 	handleError(err, "")
 	return response.Items[0].Rating, err
 }
 
-// GetCommentThreads get comment threads
-func GetCommentThreads(videoID string) (*youtube.CommentThreadListResponse, error) {
+// CommentThreads get comment threads
+func CommentThreads(videoID string) (*youtube.CommentThreadListResponse, error) {
 	call := Service.CommentThreads.List("snippet,replies")
 	call = call.VideoId(videoID)
 	call = call.MaxResults(50)
@@ -227,8 +227,8 @@ func GetCommentThreads(videoID string) (*youtube.CommentThreadListResponse, erro
 	return response, err
 }
 
-// GetComment get comment for a thread
-func GetComment(threadID string) (*youtube.Comment, error) {
+// Comment get comment for a thread
+func Comment(threadID string) (*youtube.Comment, error) {
 	call := Service.Comments.List("snippet")
 
 	call = call.Id(threadID)
@@ -238,9 +238,9 @@ func GetComment(threadID string) (*youtube.Comment, error) {
 	return response.Items[0], err
 }
 
-// GetComments get comments for a video
-func GetComments(videoID string) (*youtube.CommentListResponse, error) {
-	threads, _ := GetCommentThreads(videoID)
+// Comments get comments for a video
+func Comments(videoID string) (*youtube.CommentListResponse, error) {
+	threads, _ := CommentThreads(videoID)
 	call := Service.Comments.List("snippet")
 
 	comments := ""
@@ -260,8 +260,8 @@ func GetComments(videoID string) (*youtube.CommentListResponse, error) {
 	return response, err
 }
 
-// GetReply get replies for comment
-func GetReply(commentID string) (*youtube.CommentListResponse, error) {
+// Reply get replies for comment
+func Reply(commentID string) (*youtube.CommentListResponse, error) {
 	call := Service.Comments.List("snippet")
 	call = call.ParentId(commentID)
 	call = call.MaxResults(10)
@@ -286,8 +286,8 @@ func Search(query string, sourceType string) (*youtube.SearchListResponse, error
 	return response, err
 }
 
-// GetSearchNextPage get next page with search results
-func GetSearchNextPage(query string, sourceType string, pageToken string) (*youtube.SearchListResponse, error) {
+// SearchNextPage get next page with search results
+func SearchNextPage(query string, sourceType string, pageToken string) (*youtube.SearchListResponse, error) {
 	call := searchCall(query, sourceType)
 	call.PageToken(pageToken)
 
