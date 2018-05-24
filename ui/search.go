@@ -93,6 +93,11 @@ func performSearch(g *gocui.Gui, v *gocui.View) error {
 		if err != nil {
 			return err
 		}
+
+		if err := moveToOrigin(view); err != nil {
+			return err
+		}
+
 		view.Clear()
 
 		printIDs(view, "Videos", videos)

@@ -136,6 +136,9 @@ func goToPlaylists(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		return err
 	}
+	if err := moveToOrigin(view); err != nil {
+		return err
+	}
 	view.Clear()
 
 	_, cy := v.Cursor()
@@ -211,6 +214,11 @@ func goToVideoChannelPlaylists(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		return err
 	}
+
+	if err := moveToOrigin(view); err != nil {
+		return nil
+	}
+
 	view.Clear()
 
 	res, _ := api.ChannelPlaylistItems(SelectedVideo.Snippet.ChannelId)
@@ -232,6 +240,10 @@ func goToVideoChannelVideos(g *gocui.Gui, v *gocui.View) error {
 
 	view, err := g.View(videosView)
 	if err != nil {
+		return err
+	}
+
+	if err := moveToOrigin(view); err != nil {
 		return err
 	}
 
@@ -260,6 +272,10 @@ func goToChannelVideos(g *gocui.Gui, v *gocui.View) error {
 	}
 	view, err := g.View(videosView)
 	if err != nil {
+		return err
+	}
+
+	if err := moveToOrigin(view); err != nil {
 		return err
 	}
 
@@ -316,10 +332,15 @@ func displayVideoPage(g *gocui.Gui, v *gocui.View, vidID string) error {
 	}
 
 	view, err := g.View(videoView)
-	view.Clear()
 	if err != nil {
 		return err
 	}
+
+	if err := moveToOrigin(view); err != nil {
+		return err
+	}
+
+	view.Clear()
 
 	video, _ := api.Videos(vidID)
 
@@ -497,6 +518,52 @@ func delMsg(g *gocui.Gui, v *gocui.View) error {
 
 func quit(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit
+}
+
+func filterChannels(g *gocui.Gui, v *gocui.View) error {
+	if _, err := setCurrentViewOnTop(g, filterView, true); err != nil {
+		return err
+	}
+
+	deleteGlobKeybindings(g)
+
+	return nil
+}
+
+func performFilter(g *gocui.Gui, v *gocui.View) error {
+	view, err := g.View(channelsView)
+	if err != nil {
+		return err
+	}
+
+	text := v.ViewBuffer()
+	text = strings.TrimSpace(text)
+	if len(text) == 0 {
+		return nil
+	}
+
+	view.Clear()
+
+	hasResult := false
+	for _, channel := range subscriptions {
+		name := strings.ToLower(channel.Snippet.Title)
+		if strings.Contains(name, text) {
+			hasResult = true
+			regularText(view, channel.Snippet.Title)
+		}
+	}
+
+	if !hasResult {
+		displaySubscriptions(view)
+	} else {
+		if err := moveToOrigin(view); err != nil {
+			return err
+		}
+	}
+
+	goBack(g, v)
+
+	return nil
 }
 
 // Run func

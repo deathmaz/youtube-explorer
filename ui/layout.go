@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"fmt"
-
 	"github.com/deathmaz/my-youtube/api"
 	"github.com/jroimartin/gocui"
 )
@@ -10,6 +8,7 @@ import (
 var (
 	history       = []string{}
 	nextPageToken = ""
+	gui           *gocui.Gui
 )
 
 func setCurrentViewOnTop(g *gocui.Gui, name string, writeHistory bool) (*gocui.View, error) {
@@ -24,6 +23,17 @@ func setCurrentViewOnTop(g *gocui.Gui, name string, writeHistory bool) (*gocui.V
 
 func layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
+	gui = g
+
+	if v, err := g.SetView(filterView, maxX/2-25, maxY/2-2, maxX/2+25, maxY/2+2); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+
+		v.Editable = true
+		v.Wrap = true
+	}
+
 	if v, err := g.SetView(channelPlaylistsView, 0, 0, maxX-1, maxY-1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
@@ -52,11 +62,9 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		// var DefaultEditor gocui.Editor = gocui.EditorFunc(customEditor)
 
 		v.Editable = true
 		v.Wrap = true
-		// v.Editor = DefaultEditor
 	}
 
 	if v, err := g.SetView(rateVideoView, maxX/2-15, maxY/2-3, maxX/2+15, maxY/2+3); err != nil {
@@ -124,18 +132,14 @@ func layout(g *gocui.Gui) error {
 					}
 					v.Clear()
 
-					for _, channel := range subscriptions {
-						regularText(v, channel.Snippet.Title)
-					}
+					displaySubscriptions(v)
 					viewData[channelsView]["pageToken"] = response.NextPageToken
 					RemoveLoading(g, v)
 					return nil
 				})
 			}()
 		} else {
-			for _, channel := range subscriptions {
-				fmt.Fprintln(v, channel.Snippet.Title)
-			}
+			displaySubscriptions(v)
 		}
 
 		if _, err := setCurrentViewOnTop(g, channelsView, true); err != nil {

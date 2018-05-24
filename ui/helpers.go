@@ -58,9 +58,14 @@ func RemoveLoading(g *gocui.Gui, v *gocui.View) error {
 }
 
 func goBack(g *gocui.Gui, v *gocui.View) error {
+	if v.Name() == channelsView {
+		v.Clear()
+		displaySubscriptions(v)
+	}
+
 	if len(history) > 1 {
 		curView := history[len(history)-2]
-		if v.Name() == searchView {
+		if v.Name() == searchView || v.Name() == filterView {
 			setGlobalKeybindings(g)
 		}
 
@@ -69,6 +74,24 @@ func goBack(g *gocui.Gui, v *gocui.View) error {
 		if _, err := setCurrentViewOnTop(g, curView, false); err != nil {
 			return err
 		}
+
+	}
+
+	return nil
+}
+
+func displaySubscriptions(v *gocui.View) {
+	for _, channel := range subscriptions {
+		regularText(v, channel.Snippet.Title)
+	}
+}
+
+func moveToOrigin(v *gocui.View) error {
+	if err := v.SetOrigin(0, 0); err != nil {
+		return err
+	}
+	if err := v.SetCursor(0, 0); err != nil {
+		return err
 	}
 
 	return nil

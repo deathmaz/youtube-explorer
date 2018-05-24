@@ -124,6 +124,12 @@ func init() {
 			view: channelsView, ch: 'v', mod: gocui.ModNone, action: goToChannelVideos,
 		},
 		{
+			view: channelsView, ch: 'f', mod: gocui.ModNone, action: filterChannels,
+		},
+		{
+			view: filterView, key: gocui.KeyEnter, mod: gocui.ModNone, action: performFilter,
+		},
+		{
 			view: channelPlaylistsView, key: gocui.KeyEnter, mod: gocui.ModNone, action: goToVideos,
 		},
 		{
