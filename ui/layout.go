@@ -8,7 +8,6 @@ import (
 var (
 	history       = []string{}
 	nextPageToken = ""
-	gui           *gocui.Gui
 )
 
 func setCurrentViewOnTop(g *gocui.Gui, name string, writeHistory bool) (*gocui.View, error) {
@@ -23,13 +22,13 @@ func setCurrentViewOnTop(g *gocui.Gui, name string, writeHistory bool) (*gocui.V
 
 func layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
-	gui = g
 
 	if v, err := g.SetView(filterView, maxX/2-25, maxY/2-2, maxX/2+25, maxY/2+2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 
+		v.Title = "Filter"
 		v.Editable = true
 		v.Wrap = true
 	}
@@ -63,6 +62,7 @@ func layout(g *gocui.Gui) error {
 			return err
 		}
 
+		v.Title = "Search"
 		v.Editable = true
 		v.Wrap = true
 	}

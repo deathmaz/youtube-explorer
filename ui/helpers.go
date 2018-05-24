@@ -50,9 +50,6 @@ func RemoveLoading(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	goBack(g, v)
-	/* if _, err := g.SetCurrentView(prevView); err != nil {
-		return err
-	} */
 
 	return nil
 }
@@ -95,4 +92,13 @@ func moveToOrigin(v *gocui.View) error {
 	}
 
 	return nil
+}
+
+func clearInput(v *gocui.View) {
+	visibleText := v.ViewBuffer()
+	if len(visibleText) > 0 {
+		for i := 0; i < len(visibleText); i++ {
+			v.EditDelete(true)
+		}
+	}
 }

@@ -149,6 +149,7 @@ func goToPlaylists(g *gocui.Gui, v *gocui.View) error {
 	for _, subscription := range subscriptions {
 		if subscription.Snippet.Title == l {
 			res, _ := api.ChannelPlaylistItems(subscription.Snippet.ResourceId.ChannelId)
+			view.Title = subscription.Snippet.Title + " playlists"
 			playlists = res.Items
 			viewData[channelPlaylistsView]["pageToken"] = res.NextPageToken
 			viewData[channelPlaylistsView]["channelID"] = subscription.Snippet.ResourceId.ChannelId
@@ -189,6 +190,7 @@ func goToVideos(g *gocui.Gui, v *gocui.View) error {
 	for _, playlist := range playlists {
 		if playlist.Snippet.Title == l {
 			res, _ := api.PlaylistItems(playlist.Id)
+			view.Title = playlist.Snippet.Title + " videos"
 			videos = res.Items
 			viewData[videosView]["pageToken"] = res.NextPageToken
 			viewData[videosView]["playlistID"] = playlist.Id
@@ -225,6 +227,7 @@ func goToVideoChannelPlaylists(g *gocui.Gui, v *gocui.View) error {
 	playlists = res.Items
 	viewData[channelPlaylistsView]["pageToken"] = res.NextPageToken
 	viewData[channelPlaylistsView]["channelID"] = SelectedVideo.Snippet.ChannelId
+	view.Title = SelectedVideo.Snippet.ChannelTitle + " playlists"
 
 	for _, playlist := range playlists {
 		regularText(view, playlist.Snippet.Title)
@@ -254,6 +257,7 @@ func goToVideoChannelVideos(g *gocui.Gui, v *gocui.View) error {
 	videos = res.Items
 	viewData[videosView]["pageToken"] = res.NextPageToken
 	viewData[videosView]["playlistID"] = channel.Items[0].ContentDetails.RelatedPlaylists.Uploads
+	view.Title = channel.Items[0].Snippet.Title + " videos"
 
 	for _, video := range videos {
 		regularText(view, video.Snippet.Title)
@@ -288,6 +292,7 @@ func goToChannelVideos(g *gocui.Gui, v *gocui.View) error {
 			videos = res.Items
 			viewData[videosView]["pageToken"] = res.NextPageToken
 			viewData[videosView]["playlistID"] = channel.Items[0].ContentDetails.RelatedPlaylists.Uploads
+			view.Title = subscription.Snippet.Title + " videos"
 
 			for _, video := range videos {
 				regularText(view, video.Snippet.Title)
@@ -522,6 +527,17 @@ func quit(g *gocui.Gui, v *gocui.View) error {
 
 func filterChannels(g *gocui.Gui, v *gocui.View) error {
 	if _, err := setCurrentViewOnTop(g, filterView, true); err != nil {
+		return err
+	}
+
+	view, err := g.View(filterView)
+	if err != nil {
+		return err
+	}
+
+	clearInput(view)
+
+	if err := moveToOrigin(view); err != nil {
 		return err
 	}
 

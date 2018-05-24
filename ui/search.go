@@ -13,32 +13,16 @@ var (
 	videosList = []*youtube.SearchResult{}
 )
 
-// func customEditor(v *gocui.View, key gocui.Key, ch rune, mod gocui.Modifier) {
-// switch {
-// case key == gocui.KeyEnter:
-// performSearch()
-// case ch != 0 && mod == 0:
-// v.EditWrite(ch)
-// case ch == 'j':
-// v.EditWrite('j')
-// case key == gocui.KeySpace:
-// v.EditWrite(' ')
-// case key == gocui.KeyBackspace || key == gocui.KeyBackspace2:
-// v.EditDelete(true)
-// }
-// }
-
 func showSearchInput(g *gocui.Gui, v *gocui.View) error {
 	if _, err := setCurrentViewOnTop(g, searchView, true); err != nil {
 		return err
 	}
-	//  TODO: clear input //
-	// view, err := g.View(searchView)
-	// if err != nil {
-	// return err
-	// }
-	// view.Clear()
-	// view.MoveCursor(0, 0, false)
+
+	view, err := g.View(searchView)
+	if err != nil {
+		return err
+	}
+	clearInput(view)
 
 	deleteGlobKeybindings(g)
 
@@ -99,6 +83,7 @@ func performSearch(g *gocui.Gui, v *gocui.View) error {
 		}
 
 		view.Clear()
+		view.Title = "Search results for " + text
 
 		printIDs(view, "Videos", videos)
 		// printIDs(v, "Channels", channels)
