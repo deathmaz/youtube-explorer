@@ -102,3 +102,13 @@ func clearInput(v *gocui.View) {
 		}
 	}
 }
+
+func historyContains(name string) bool {
+	for _, n := range history {
+		if n == name {
+			return true
+		}
+	}
+
+	return false
+}

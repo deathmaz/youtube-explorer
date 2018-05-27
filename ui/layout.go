@@ -11,7 +11,7 @@ var (
 )
 
 func setCurrentViewOnTop(g *gocui.Gui, name string, writeHistory bool) (*gocui.View, error) {
-	if writeHistory {
+	if writeHistory && !historyContains(name) {
 		history = append(history, name)
 	}
 	if _, err := g.SetCurrentView(name); err != nil {

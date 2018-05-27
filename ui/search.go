@@ -33,10 +33,6 @@ func performSearch(g *gocui.Gui, v *gocui.View) error {
 	// remove search view from history
 	history = history[:len(history)-1]
 
-	if _, err := setCurrentViewOnTop(g, searchResultsView, true); err != nil {
-		return err
-	}
-
 	setGlobalKeybindings(g)
 	text := v.ViewBuffer()
 	if len(strings.TrimSpace(text)) == 0 {
@@ -50,6 +46,10 @@ func performSearch(g *gocui.Gui, v *gocui.View) error {
 		vidID = SpaceMap(vidID)
 		displayVideoPage(g, v, strings.TrimSpace(vidID))
 	} else {
+		if _, err := setCurrentViewOnTop(g, searchResultsView, true); err != nil {
+			return err
+		}
+
 		viewData[searchResultsView]["query"] = text
 
 		response, _ := api.Search(text, "video")
