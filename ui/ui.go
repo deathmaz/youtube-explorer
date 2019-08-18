@@ -21,7 +21,7 @@ var (
 	playlists            = []*youtube.Playlist{}
 	videos               = []*youtube.PlaylistItem{}
 	selectedVideoQuality = "720"
-	videoQuality         = []string{"360", "480", "720", "1080"}
+	videoQuality         = []string{"240", "360", "480", "720", "1080"}
 	ratings              = []string{"like", "dislike", "none"}
 
 	// SelectedRating selected rating for video
@@ -352,8 +352,7 @@ func displayVideoPage(g *gocui.Gui, v *gocui.View, vidID string) error {
 	if len(video.Items) > 0 {
 		rating, _ := api.YourRating(vidID)
 		SelectedRating = rating
-		commentThreads, _ := api.CommentThreads(vidID)
-
+		commentThreads, err := api.CommentThreads(vidID)
 		vid := video.Items[0]
 		view.Title = vid.Snippet.Title
 		SelectedVideo = vid
@@ -368,28 +367,33 @@ func displayVideoPage(g *gocui.Gui, v *gocui.View, vidID string) error {
 
 		fmt.Fprintln(view, "")
 		fmt.Fprintf(view, "\x1b[38;5;208mYour rating: %s\x1b[0m\n~\n~\n", rating)
-		headerText(view, "Comments:")
 
-		for _, thread := range commentThreads.Items {
-			comment := thread.Snippet.TopLevelComment
-			blueText(view, comment.Snippet.AuthorDisplayName+" ", "")
-			blueTextLn(view, strconv.FormatInt(comment.Snippet.LikeCount, 10)+" Likes", "")
-			highlightTextLn(view, comment.Snippet.PublishedAt, "")
-			regularText(view, comment.Snippet.TextDisplay)
+		if err != nil {
+			fmt.Fprintln(view, err)
+		} else {
+			headerText(view, "Comments:")
+			for _, thread := range commentThreads.Items {
+				comment := thread.Snippet.TopLevelComment
+				blueText(view, comment.Snippet.AuthorDisplayName+" ", "")
+				blueTextLn(view, strconv.FormatInt(comment.Snippet.LikeCount, 10)+" Likes", "")
+				highlightTextLn(view, comment.Snippet.PublishedAt, "")
+				regularText(view, comment.Snippet.TextDisplay)
 
-			if thread.Replies != nil {
-				headerText(view, "Replies:")
-				comments := thread.Replies.Comments
-				for i := len(comments) - 1; i >= 0; i-- {
-					blueText(view, "    "+comments[i].Snippet.AuthorDisplayName+" ", "")
-					blueTextLn(view, strconv.FormatInt(comments[i].Snippet.LikeCount, 10)+" Likes", "")
-					highlightTextLn(view, "    "+comments[i].Snippet.PublishedAt, "")
-					fmt.Fprint(view, "    ")
-					regularText(view, comments[i].Snippet.TextDisplay)
+				if thread.Replies != nil {
+					headerText(view, "Replies:")
+					comments := thread.Replies.Comments
+					for i := len(comments) - 1; i >= 0; i-- {
+						blueText(view, "    "+comments[i].Snippet.AuthorDisplayName+" ", "")
+						blueTextLn(view, strconv.FormatInt(comments[i].Snippet.LikeCount, 10)+" Likes", "")
+						highlightTextLn(view, "    "+comments[i].Snippet.PublishedAt, "")
+						fmt.Fprint(view, "    ")
+						regularText(view, comments[i].Snippet.TextDisplay)
+					}
 				}
+				fmt.Fprintln(view, "")
 			}
-			fmt.Fprintln(view, "")
 		}
+
 	} else {
 		regularText(view, "No result")
 	}

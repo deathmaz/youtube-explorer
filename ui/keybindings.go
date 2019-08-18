@@ -147,12 +147,12 @@ func init() {
 				return playVideo(g, v)
 			},
 		},
-		{
+		/* {
 			view: videoView, ch: 'd', mod: gocui.ModNone,
 			action: func(g *gocui.Gui, v *gocui.View) error {
 				return downloadVideo(g, v)
 			},
-		},
+		}, */
 		{
 			view: videoView, ch: 'r', mod: gocui.ModNone,
 			action: func(g *gocui.Gui, v *gocui.View) error {

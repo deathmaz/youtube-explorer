@@ -57,7 +57,7 @@ func layout(g *gocui.Gui) error {
 		v.Wrap = true
 	}
 
-	if v, err := g.SetView(searchView, maxX/2-25, maxY/2-3, maxX/2+25, maxY/2+3); err != nil {
+	if v, err := g.SetView(searchView, maxX/2-30, maxY/2-2, maxX/2+30, maxY/2+2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}

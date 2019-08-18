@@ -223,7 +223,6 @@ func CommentThreads(videoID string) (*youtube.CommentThreadListResponse, error) 
 	call = call.MaxResults(50)
 	call = call.TextFormat("plainText")
 	response, err := call.Do()
-	handleError(err, "")
 	return response, err
 }
 

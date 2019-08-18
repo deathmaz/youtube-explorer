@@ -97,9 +97,13 @@ func moveToOrigin(v *gocui.View) error {
 func clearInput(v *gocui.View) {
 	visibleText := v.ViewBuffer()
 	if len(visibleText) > 0 {
-		for i := 0; i < len(visibleText); i++ {
+		v.Editable = false
+		v.Clear()
+		moveToOrigin(v)
+		v.Editable = true
+		/* for i := 0; i < len(visibleText); i++ {
 			v.EditDelete(true)
-		}
+		} */
 	}
 }
 
