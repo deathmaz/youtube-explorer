@@ -66,7 +66,7 @@ func tokenCacheFile() (string, error) {
 		return "", err
 	}
 	tokenCacheDir := filepath.Join(usr.HomeDir, ".credentials")
-	os.MkdirAll(tokenCacheDir, 0700)
+	os.MkdirAll(tokenCacheDir, 0o700)
 	return filepath.Join(tokenCacheDir,
 		url.QueryEscape("youtube-go-quickstart.json")), err
 }
@@ -88,7 +88,7 @@ func tokenFromFile(file string) (*oauth2.Token, error) {
 // token in it.
 func saveToken(file string, token *oauth2.Token) {
 	fmt.Printf("Saving credential file to: %s\n", file)
-	f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		log.Fatalf("Unable to cache oauth token: %v", err)
 	}
@@ -106,7 +106,7 @@ func handleError(err error, message string) {
 }
 
 func subscriptionsListCall() *youtube.SubscriptionsListCall {
-	call := Service.Subscriptions.List("contentDetails,snippet")
+	call := Service.Subscriptions.List([]string{"contentDetails", "snippet"})
 	call = call.Mine(true)
 	call = call.MaxResults(50)
 	return call
@@ -129,11 +129,10 @@ func MySubscriptionsNextPage(pageToken string) (*youtube.SubscriptionListRespons
 	handleError(err, "Error getting next subscriptions page")
 
 	return response, err
-
 }
 
 func channelPlaylistItemsCall(channelID string) *youtube.PlaylistsListCall {
-	call := Service.Playlists.List("contentDetails,snippet")
+	call := Service.Playlists.List([]string{"contentDetails", "snippet"})
 	call = call.ChannelId(channelID)
 	call = call.MaxResults(50)
 	return call
@@ -159,7 +158,7 @@ func ChannelPlaylistItemsNextPage(channelID string, pageToken string) (res *yout
 }
 
 func playlistItemsCall(playlistID string) *youtube.PlaylistItemsListCall {
-	call := Service.PlaylistItems.List("contentDetails,snippet")
+	call := Service.PlaylistItems.List([]string{"contentDetails", "snippet"})
 	call = call.PlaylistId(playlistID)
 	call = call.MaxResults(50)
 	return call
@@ -184,7 +183,7 @@ func PlaylistItemsNextPage(playlistID string, pageToken string) (res *youtube.Pl
 
 // Channel get channel by its id
 func Channel(channelID string) (res *youtube.ChannelListResponse, err error) {
-	call := Service.Channels.List("contentDetails,snippet")
+	call := Service.Channels.List([]string{"contentDetails", "snippet"})
 	call = call.Id(channelID)
 	response, err := call.Do()
 	handleError(err, "")
@@ -193,7 +192,7 @@ func Channel(channelID string) (res *youtube.ChannelListResponse, err error) {
 
 // Videos get video by its id
 func Videos(videoID string) (*youtube.VideoListResponse, error) {
-	call := Service.Videos.List("snippet,statistics,contentDetails")
+	call := Service.Videos.List([]string{"snippet", "statistics", "contentDetails"})
 	call = call.Id(videoID)
 	res, err := call.Do()
 	handleError(err, "")
@@ -210,7 +209,7 @@ func RateVideo(videoID string, rating string) error {
 
 // YourRating get rating for video
 func YourRating(videoID string) (string, error) {
-	call := Service.Videos.GetRating(videoID)
+	call := Service.Videos.GetRating([]string{videoID})
 	response, err := call.Do()
 	handleError(err, "")
 	return response.Items[0].Rating, err
@@ -218,7 +217,7 @@ func YourRating(videoID string) (string, error) {
 
 // CommentThreads get comment threads
 func CommentThreads(videoID string) (*youtube.CommentThreadListResponse, error) {
-	call := Service.CommentThreads.List("snippet,replies")
+	call := Service.CommentThreads.List([]string{"snippet", "replies"})
 	call = call.VideoId(videoID)
 	call = call.MaxResults(50)
 	call = call.TextFormat("plainText")
@@ -228,7 +227,7 @@ func CommentThreads(videoID string) (*youtube.CommentThreadListResponse, error) 
 
 // Comment get comment for a thread
 func Comment(threadID string) (*youtube.Comment, error) {
-	call := Service.Comments.List("snippet")
+	call := Service.Comments.List([]string{"snippet"})
 
 	call = call.Id(threadID)
 	response, err := call.Do()
@@ -240,7 +239,7 @@ func Comment(threadID string) (*youtube.Comment, error) {
 // Comments get comments for a video
 func Comments(videoID string) (*youtube.CommentListResponse, error) {
 	threads, _ := CommentThreads(videoID)
-	call := Service.Comments.List("snippet")
+	call := Service.Comments.List([]string{"snippet"})
 
 	comments := ""
 	threadsLen := len(threads.Items) - 1
@@ -261,7 +260,7 @@ func Comments(videoID string) (*youtube.CommentListResponse, error) {
 
 // Reply get replies for comment
 func Reply(commentID string) (*youtube.CommentListResponse, error) {
-	call := Service.Comments.List("snippet")
+	call := Service.Comments.List([]string{"snippet"})
 	call = call.ParentId(commentID)
 	call = call.MaxResults(10)
 	response, err := call.Do()
@@ -270,7 +269,7 @@ func Reply(commentID string) (*youtube.CommentListResponse, error) {
 }
 
 func searchCall(query string, sourceType string) *youtube.SearchListCall {
-	call := Service.Search.List("id,snippet").
+	call := Service.Search.List([]string{"id", "snippet"}).
 		Q(query).
 		MaxResults(50).
 		Type(sourceType)
